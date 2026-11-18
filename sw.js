@@ -2,7 +2,7 @@
  * Tiene in memoria l'app, i caratteri e le librerie, così si apre anche senza rete in cantiere,
  * e risponde agli indirizzi _blob/<id> (foto e PDF) leggendo dal dispositivo o, se mancano, dal Drive. */
 "use strict";
-var VERSIONE = "vc-2026-11-18d";
+var VERSIONE = "vc-2026-11-18e";
 var GUSCIO = ["./", "index.html", "motore.js", "config.js", "manifest.webmanifest",
   "font/LiberationSans-Regular.ttf", "font/LiberationSans-Bold.ttf", "icone/icona-192.png", "icone/icona-512.png", "icone/icona-180.png"];
 var ESTERNI = /^https:\/\/(cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
@@ -76,12 +76,20 @@ self.addEventListener("fetch", function (ev) {
   var m = /\/_blob\/([0-9a-f]{16,64})$/.exec(u.pathname);
   if (m && u.origin === self.location.origin) { ev.respondWith(rispostaBlob(m[1])); return; }
   if (u.origin === self.location.origin) {
-    // l'app: prima dalla memoria (si apre subito, anche senza rete), intanto si aggiorna dalla rete per la volta dopo
+    // l'app: dalla rete se risponde entro 4 secondi (così arrivano subito gli aggiornamenti), altrimenti dalla memoria
+    // (in cantiere senza segnale si apre lo stesso)
     ev.respondWith(caches.open(VERSIONE).then(function (c) {
-      return c.match(req, { ignoreSearch: true }).then(function (hit) {
-        var rete = fetch(req).then(function (r) { if (r && r.ok) c.put(req, r.clone()); return r; });
-        if (hit) { rete.catch(function () {}); return hit; }
-        return rete.catch(function () { return req.mode === "navigate" ? c.match("index.html") : new Response("", { status: 504 }); });
+      var dallaMemoria = function () {
+        return c.match(req, { ignoreSearch: true }).then(function (hit) {
+          return hit || (req.mode === "navigate" ? c.match("index.html") : null) || new Response("", { status: 504 });
+        });
+      };
+      var rete = fetch(req, { cache: "no-cache" }).then(function (r) { if (r && r.ok) c.put(req, r.clone()); return r; });
+      var tempo = new Promise(function (ok) { setTimeout(function () { ok(null); }, 4000); });
+      return Promise.race([rete.then(null, function () { return null; }), tempo]).then(function (r) {
+        if (r && r.ok) return r;
+        rete.catch(function () {});
+        return dallaMemoria();
       });
     }));
     return;

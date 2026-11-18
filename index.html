@@ -210,6 +210,7 @@ details.grp summary { cursor: pointer; font-weight: 600; padding: 6px 0; list-st
   background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 6px; font-size: 15px; max-width: min(92vw, 520px); }
 @media (prefers-reduced-motion: no-preference) { button, .tab { transition: background-color .15s, border-color .15s; } }
 /* versione autonoma: impostazioni, scheda del cantiere, stato della copia nel Drive */
+[hidden] { display: none !important; }   /* i fogli a tutto schermo (firma, prescrizioni tipo, anteprima) restano chiusi finché non si aprono */
 html, body { margin: 0; }
 .drive { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 15px; color: var(--muted); }
 .drive .pallino { width: 10px; height: 10px; border-radius: 50%; background: var(--guide); flex: none; }
