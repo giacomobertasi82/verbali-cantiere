@@ -2,7 +2,7 @@
  * Tiene in memoria l'app, i caratteri e le librerie, così si apre anche senza rete in cantiere,
  * e risponde agli indirizzi _blob/<id> (foto e PDF) leggendo dal dispositivo o, se mancano, dal Drive. */
 "use strict";
-var VERSIONE = "vc-2026-11-18c";
+var VERSIONE = "vc-2026-11-18d";
 var GUSCIO = ["./", "index.html", "motore.js", "config.js", "manifest.webmanifest",
   "font/LiberationSans-Regular.ttf", "font/LiberationSans-Bold.ttf", "icone/icona-192.png", "icone/icona-512.png", "icone/icona-180.png"];
 var ESTERNI = /^https:\/\/(cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;

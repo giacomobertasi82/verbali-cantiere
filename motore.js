@@ -257,7 +257,7 @@
   function accedi(silenzioso) {
     if (!CONF.googleClientId) return false;
     var st = nuovoId(); lsSet("vc:statoAccesso", st); lsSet("vc:ultimoTentativo", Date.now());
-    var q = new URLSearchParams({ client_id: CONF.googleClientId, redirect_uri: location.origin + location.pathname,
+    var q = new URLSearchParams({ client_id: CONF.googleClientId, redirect_uri: location.origin + location.pathname.replace(/index.html$/, ""),
       response_type: "token", scope: SCOPE, include_granted_scopes: "true", state: st });
     if (silenzioso) q.set("prompt", "none");
     if (G.email) q.set("login_hint", G.email);
