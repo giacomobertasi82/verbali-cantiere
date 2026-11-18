@@ -543,7 +543,7 @@ input[type=email], input[type=password] { width: 100%; min-width: 0; max-width: 
     var n = prossimoNumero(cid), ap = (c.prescrizioniAperte || []).length;
     var righe = righeArchivio(cid), daArch = righe.filter(function (r) { return r.v && r.v.stato === "firmato"; }).length;
     var u = c.ultimoVerbale, ultimo = righe.length ? righe[0] : null;
-    var sotto = ultimo ? "Ultimo: n. " + p2(ultimo.numero) + " del " + ((ultimo.v || ultimo.pdf).data || "") : u ? "Ultimo: n. " + p2(u.numero) + " del " + u.data + ", in commessa" : "Ancora nessun verbale";
+    var sotto = ultimo ? "Ultimo: n. " + p2(ultimo.numero) + " del " + ((ultimo.v || ultimo.pdf).data || "") : u ? "Ultimo: n. " + p2(u.numero) + " del " + u.data + ", fuori dall'app" : "Ancora nessun verbale";
     var armato = S.armato.nuovo && corso.length;
     out.push(h("div", { class: "tiles" }, [
       h("button", { type: "button", class: "tile " + (armato ? "warn" : "primary"), onclick: function () {
@@ -579,9 +579,9 @@ input[type=email], input[type=password] { width: 100%; min-width: 0; max-width: 
     // i verbali fatti prima dell'app stanno nella cartella della commessa
     var u = c.ultimoVerbale, fino = righe.length ? righe[righe.length - 1].numero - 1 : (u ? Number(u.numero) || 0 : 0);
     if (fino >= 1) out.push(h("div", { class: "muted small", text: "I verbali " + (fino === 1 ? "n. 01" : "dal n. 01 al n. " + p2(fino)) +
-      (!righe.length && u ? " (l'ultimo è del " + u.data + ")" : "") + " sono nella cartella della commessa " + (c.commessa || cid) + ", non nell'app." }));
+      (!righe.length && u ? " (l'ultimo è del " + u.data + ")" : "") + " sono stati fatti fuori dall'app." }));
     if (righe.some(function (r) { return r.v && r.v.stato === "firmato"; })) out.push(h("div", { class: "muted small",
-      text: "Per i verbali «da archiviare» scrivi a Claude «archivia il verbale»: prepara Word e PDF, li mette in commessa dopo il tuo ok e prepara la mail." }));
+      text: "Ogni verbale chiuso, con il suo PDF, è anche nel tuo Google Drive, nella cartella «Verbali di cantiere»." }));
     main.replaceChildren.apply(main, out);
   }
   // ------------------------------------------------------------------ versione autonoma: copia nel Drive, impostazioni, scheda del cantiere
@@ -1471,9 +1471,9 @@ input[type=email], input[type=password] { width: 100%; min-width: 0; max-width: 
     } else if (v.stato === "firmato") {
       out.push(h("div", { class: "alert green", text: "Verbale chiuso alle " + (v.oraFine || "") + "." }));
       out.push(bloccoPdf());
-      out.push(h("div", { class: "muted small", text: "Per copiarlo in commessa e preparare la mail ai destinatari del cantiere scrivi a Claude «archivia il verbale n. " + p2(v.numero) + " di " + (cantiere().nome || v.cantiere) + "»." }));
+      out.push(h("div", { class: "muted small", text: "Il PDF è anche nel tuo Google Drive, nella cartella «Verbali di cantiere», insieme alle foto e alle firme." }));
     } else if (v.stato === "archiviato") {
-      out.push(h("div", { class: "alert green", text: "Verbale archiviato in commessa." }));
+      out.push(h("div", { class: "alert green", text: "Verbale archiviato." }));
       if (v.pdf) out.push(bloccoPdf());
     }
     return out;
