@@ -489,7 +489,11 @@
     if (x && x.cantieri && typeof x.cantieri === "object") Object.keys(x.cantieri).forEach(function (k) { scritture.push(["cantieri/" + k, x.cantieri[k]]); });
     if (x && x.libreria) scritture.push(["libreria/prescrizioni", x.libreria]);
     if (x && x.categorie && !x.imprese) scritture.push(["libreria/prescrizioni", x]);
-    if (x && x.impostazioni) scritture.push(["impostazioni/profilo", x.impostazioni]);
+    if (x && x.impostazioni) {   // si uniscono a quelle che ci sono già (le immagini della carta intestata restano)
+      var att = mem["impostazioni/profilo"], unite = clone(att && !att.del && att.data ? att.data : {}) || {};
+      Object.keys(x.impostazioni).forEach(function (k) { unite[k] = x.impostazioni[k]; });
+      scritture.push(["impostazioni/profilo", unite]);
+    }
     if (!scritture.length) return Promise.reject(errore("vuoto", "nel file non ci sono cantieri né prescrizioni da importare"));
     return scritture.reduce(function (p, w) { return p.then(function () { return scrivi(w[0], w[1]); }); }, Promise.resolve())
       .then(function () { return scritture.map(function (w) { return w[0]; }); });
