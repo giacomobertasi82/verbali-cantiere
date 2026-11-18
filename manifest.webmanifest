@@ -1,0 +1,17 @@
+{
+  "name": "Verbali di cantiere",
+  "short_name": "Verbali",
+  "description": "Verbali di visita in cantiere del CSE, compilati e firmati sul telefono",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EEF0EE",
+  "theme_color": "#1D5BA8",
+  "icons": [
+    { "src": "icone/icona-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icone/icona-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icone/icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

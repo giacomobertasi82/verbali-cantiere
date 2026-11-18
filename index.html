@@ -1,0 +1,1928 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verbali di cantiere</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icone/icona-180.png">
+<link rel="icon" type="image/png" href="icone/icona-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Verbali">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: app da telefono a una colonna. Testata fissa (indietro, titolo, stato del salvataggio, schede dei cinque passi), contenuto del passo, foglio di firma e libreria a tutto schermo. Colori dei cartelli di sicurezza: blu obbligo, giallo avvertimento, rosso divieto, verde condizione sicura. */
+:root {
+  --bg: #EEF0EE; --surface: #FFFFFF; --sunk: #F6F7F6; --fg: #1C2124; --muted: #5A6266; --line: #D3D7D5;
+  --obbligo: #1D5BA8; --obbligo-fg: #FFFFFF; --avviso: #F2B300; --avviso-ink: #1C2124; --avviso-bg: #FFF6D6;
+  --divieto: #C8261E; --divieto-bg: #FCE9E7; --sicuro: #1E7A44; --sicuro-bg: #E5F3EA;
+  --paper: #FFFFFF; --ink: #10151A; --guide: #9AA3A8;
+  --font-display: "Archivo", "Arial Narrow", Arial, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131719; --surface: #1C2124; --sunk: #171B1D; --fg: #E6E9E7; --muted: #A2AAAD; --line: #343B3F;
+    --obbligo: #4F86D6; --obbligo-fg: #0B1220; --avviso: #F2C14E; --avviso-ink: #131719; --avviso-bg: #2E2715;
+    --divieto: #E5574F; --divieto-bg: #35191A; --sicuro: #4DB57A; --sicuro-bg: #16291E;
+    --paper: #F3F4F2; --ink: #10151A; --guide: #8B959A; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131719; --surface: #1C2124; --sunk: #171B1D; --fg: #E6E9E7; --muted: #A2AAAD; --line: #343B3F;
+  --obbligo: #4F86D6; --obbligo-fg: #0B1220; --avviso: #F2C14E; --avviso-ink: #131719; --avviso-bg: #2E2715;
+  --divieto: #E5574F; --divieto-bg: #35191A; --sicuro: #4DB57A; --sicuro-bg: #16291E;
+  --paper: #F3F4F2; --ink: #10151A; --guide: #8B959A; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 40px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 680px; margin: 14px auto 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+header.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding: 8px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+  background: var(--surface); border-bottom: 1px solid var(--line); }
+.bar-in { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 10px; padding-bottom: 8px; }
+.bar-title { display: grid; gap: 1px; min-width: 0; flex: 1; }
+.eyebrow { font-family: var(--font-display); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: 21px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 14px; letter-spacing: .05em; text-transform: uppercase; margin: 0 0 10px; color: var(--muted); }
+h3 { font-family: var(--font-display); font-weight: 600; font-size: 16px; margin: 0; }
+.back { min-height: 40px; padding: 8px 12px; font-size: 15px; }
+.salva { font-size: 13px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tline { display: flex; align-items: baseline; gap: 8px; min-width: 0; flex-wrap: wrap; }
+/* anteprima: il foglio del verbale, sempre bianco come la carta */
+#prevBody { overflow-y: auto; min-height: 0; background: var(--sunk); border-radius: 6px; padding: 8px; }
+.carta { --c-bg: #FFFFFF; --c-ink: #111111; --c-grigio: #E7E6E6; --c-line: #000000; --c-muted: #595959; --c-dc: #FFF0A8;
+  background: var(--c-bg); color: var(--c-ink); font: 12.5px/1.35 Arial, Helvetica, sans-serif; padding: 18px 16px 24px; border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .25); max-width: 760px; margin: 0 auto; display: grid; gap: 6px; }
+.carta .intest { color: var(--c-muted); font-size: 11px; line-height: 1.25; margin-bottom: 6px; }
+.carta .mod { color: var(--c-muted); font-size: 10px; }
+.carta .tit { text-align: center; font-weight: 700; font-size: 15px; margin: 2px 0 0; }
+.carta .sub { text-align: center; font-size: 11px; margin: 0 0 6px; }
+.carta table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.carta th, .carta td { border: 1px solid var(--c-line); padding: 3px 5px; vertical-align: middle; text-align: left; overflow-wrap: anywhere; font-size: 11.5px; }
+.carta th { background: var(--c-grigio); text-align: center; font-weight: 700; }
+.carta td.k { background: var(--c-grigio); font-weight: 700; width: 32%; }
+.carta .riq { border: 1px solid var(--c-line); padding: 3px 6px; display: grid; gap: 2px; }
+.carta .riq p, .carta p { margin: 0; }
+.carta .sez { font-weight: 700; margin-top: 8px; }
+.carta .gius { text-align: justify; }
+.carta .cb { padding-left: 20px; text-indent: -20px; }
+.carta .dc { background: var(--c-dc); }
+.carta .auto { color: var(--c-muted); font-style: italic; }
+.carta .small { font-size: 10.5px; }
+.carta .fotogr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.carta .fotogr figure { margin: 0; display: grid; gap: 3px; text-align: center; font-size: 10.5px; }
+.carta .fotogr img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: var(--c-grigio); }
+.carta td.firma-cella { height: 74px; text-align: center; }
+.carta td.firma-cella img { max-height: 54px; max-width: 100%; display: block; margin: 0 auto; }
+.carta td.firma-cella span { display: block; color: var(--c-muted); font-size: 9.5px; }
+.salva.err { color: var(--divieto); font-weight: 600; }
+.tabs { max-width: 680px; margin: 0 auto; display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: 0 0 auto; min-height: 38px; padding: 7px 12px; border-radius: 999px; font-size: 15px; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.tab .n { font-family: var(--font-display); font-size: 12px; width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--sunk); color: var(--muted); }
+.tab[aria-current="step"] { border-color: var(--obbligo); background: var(--obbligo); color: var(--obbligo-fg); }
+.tab[aria-current="step"] .n { background: var(--obbligo-fg); color: var(--obbligo); }
+.tab .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--avviso); }
+section.block { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; min-width: 0; display: grid; gap: 10px; }
+section.block.fondo { margin-top: 28px; background: transparent; border-style: dashed; }
+section.block > h2 { margin: 0; }
+.muted { color: var(--muted); font-size: 15px; }
+.small { font-size: 14px; }
+label.lab { font-weight: 600; font-size: 15px; display: block; margin-bottom: 4px; }
+input[type=text], input[type=date], input[type=time], textarea, select { width: 100%; min-width: 0; max-width: 100%; font: 17px/1.4 var(--font-body); color: var(--fg); background: var(--sunk); border: 1.5px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+textarea { min-height: 84px; resize: vertical; }
+textarea.big { min-height: 150px; }
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid var(--obbligo); outline-offset: 1px; }
+input:disabled, textarea:disabled, select:disabled { opacity: .75; }
+.duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+button { font: 600 16px/1.1 var(--font-body); border-radius: 6px; padding: 12px 16px; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; min-height: 46px; }
+button.primary { background: var(--obbligo); border-color: var(--obbligo); color: var(--obbligo-fg); }
+button.ok { background: var(--sicuro); border-color: var(--sicuro); color: var(--obbligo-fg); }
+button.warn { border-color: var(--divieto); color: var(--divieto); }
+button.link { border: 0; background: none; color: var(--obbligo); padding: 6px 0; min-height: 0; text-align: left; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button:focus-visible, .tab:focus-visible { outline: 3px solid var(--obbligo); outline-offset: 2px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.row > .grow { flex: 1; }
+.full { width: 100%; }
+.check { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: start; padding: 8px 0; border-top: 1px solid var(--line); cursor: pointer; }
+.check:first-of-type { border-top: 0; }
+.check input { width: 24px; height: 24px; margin: 2px 0 0; accent-color: var(--obbligo); }
+.check .t { min-width: 0; display: grid; gap: 2px; }
+.check .t b { font-weight: 600; overflow-wrap: anywhere; }
+.check .t span { color: var(--muted); font-size: 15px; }
+.chip { display: inline-block; font-size: 13px; line-height: 1.3; padding: 2px 8px; border-radius: 4px; background: var(--avviso-bg); color: var(--fg); border-left: 4px solid var(--avviso); justify-self: start; }
+.chip.red { background: var(--divieto-bg); border-left-color: var(--divieto); }
+.chip.green { background: var(--sicuro-bg); border-left-color: var(--sicuro); }
+details.grp { border-top: 1px solid var(--line); padding-top: 8px; }
+details.grp:first-of-type { border-top: 0; padding-top: 0; }
+details.grp summary { cursor: pointer; font-weight: 600; padding: 6px 0; list-style-position: outside; }
+.items { display: grid; gap: 8px; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.item textarea { min-height: 64px; }
+.extra { border-top: 1px solid var(--line); padding-top: 8px; }
+.item button { min-height: 40px; padding: 8px 10px; font-size: 14px; }
+.seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; min-height: 40px; padding: 8px 12px; font-size: 15px; }
+.seg button + button { border-left: 1.5px solid var(--line); }
+.seg button[aria-pressed="true"].si { background: var(--sicuro); color: var(--obbligo-fg); }
+.seg button[aria-pressed="true"].no { background: var(--avviso); color: var(--avviso-ink); }
+.prec { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid var(--line); }
+.prec:first-of-type { border-top: 0; padding-top: 0; }
+.alert { border-radius: 6px; padding: 10px 12px; font-size: 15px; background: var(--avviso-bg); border-left: 5px solid var(--avviso); }
+.alert.red { background: var(--divieto-bg); border-left-color: var(--divieto); }
+.alert.green { background: var(--sicuro-bg); border-left-color: var(--sicuro); }
+.alert ul { margin: 4px 0 0; padding-left: 18px; }
+.proposta { border: 2px dashed var(--obbligo); border-radius: 6px; padding: 12px; display: grid; gap: 8px; background: var(--sunk); }
+.proposta ol, .proposta ul { margin: 0; padding-left: 20px; }
+.card { display: grid; gap: 4px; text-align: left; width: 100%; background: var(--surface); }
+.card .meta { color: var(--muted); font-size: 14px; font-weight: 400; }
+/* cartelle dei cantieri (home) e i due tasti dentro la cartella */
+.ico { display: inline-grid; place-items: center; }
+.ico svg { width: 100%; height: 100%; display: block; }
+.cartella { grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px 14px; }
+.cartella .ico { width: 40px; height: 40px; color: var(--avviso); }
+.cartella .testo { display: grid; gap: 4px; min-width: 0; }
+.cartella .freccia { font: 600 26px/1 var(--font-display); color: var(--muted); }
+.tiles { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.tile { display: grid; justify-items: start; align-content: start; gap: 6px; text-align: left; padding: 16px 14px; min-height: 132px; }
+.tile .ico { width: 34px; height: 34px; }
+.tile .tt { font-family: var(--font-display); font-weight: 700; font-size: 19px; line-height: 1.15; }
+.tile .ts { font-weight: 400; font-size: 14px; line-height: 1.35; color: var(--muted); }
+.tile.primary .ts { color: var(--obbligo-fg); opacity: .9; }
+@media (max-width: 340px) { .tiles { grid-template-columns: minmax(0, 1fr); } .tile { min-height: 0; } }
+.stato { font-family: var(--font-display); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; justify-self: start; }
+.stato.bozza { background: var(--sunk); color: var(--muted); border: 1px solid var(--line); }
+.stato.firma { background: var(--avviso); color: var(--avviso-ink); }
+.stato.firmato { background: var(--sicuro); color: var(--obbligo-fg); }
+.stato.archiviato { background: var(--sunk); color: var(--sicuro); border: 1px solid var(--sicuro); }
+.foto { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.foto figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+.foto img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; background: var(--sunk); }
+.foto textarea { min-height: 56px; font-size: 15px; }
+.foto button { min-height: 36px; padding: 6px 10px; font-size: 14px; }
+/* mezzi fotografati (richiesta del CSE il 17/11/2026: la foto al posto di marca, modello e targa scritti a mano) */
+.mezzo { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 10px; align-items: start; padding-top: 10px; border-top: 1px solid var(--line); }
+.mezzo img, .mz-foto img { width: 116px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; background: var(--sunk); display: block; }
+.mezzo .campi { display: grid; gap: 6px; min-width: 0; }
+.mezzo select, .mezzo input[type=text] { padding: 7px 10px; }
+.mezzo button, .mz-foto button { min-height: 38px; padding: 6px 10px; font-size: 14px; }
+.mz-foto { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 0 0 8px 36px; }
+.mz-foto:empty { display: none; }
+.lettura { display: grid; gap: 12px; }
+.lettura dl { display: grid; grid-template-columns: minmax(96px, 32%) minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.lettura dt { color: var(--muted); font-size: 14px; }
+.lettura dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.lettura ul, .lettura ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.lettura h3 { font-size: 14px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.firma { border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: grid; gap: 10px; }
+.firma.ok { border-color: var(--sicuro); }
+.firma img { background: var(--paper); border-radius: 4px; padding: 6px; max-height: 120px; width: auto; justify-self: start; }
+.stamp { font-size: 14px; color: var(--sicuro); font-variant-numeric: tabular-nums; }
+.chi { display: grid; gap: 1px; }
+.chi .ruolo { font-size: 14px; color: var(--muted); }
+.chi .nome { font-weight: 600; }
+/* fogli a tutto schermo */
+.sheet { position: fixed; inset: 0; z-index: 20; background: var(--bg); display: grid; grid-template-rows: auto 1fr auto; gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.sheet .testa { display: flex; justify-content: space-between; align-items: end; gap: 10px; flex-wrap: wrap; }
+#paper { position: relative; background: var(--paper); border-radius: 6px; border: 1px solid var(--line); min-height: 0; overflow: hidden; }
+#paper canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+#paper .linea { position: absolute; left: 6%; right: 6%; bottom: 26%; border-bottom: 1.5px solid var(--guide); pointer-events: none; }
+#paper .x { position: absolute; left: 6%; bottom: calc(26% + 6px); font: 600 22px/1 var(--font-display); color: var(--guide); pointer-events: none; }
+#paper .hint { position: absolute; left: 0; right: 0; bottom: 10%; text-align: center; font-size: 14px; color: var(--guide); pointer-events: none; }
+.sheet .piede { display: grid; gap: 8px; }
+.sheet .piede .row button { flex: 1; }
+#padErr { color: var(--divieto); font-size: 15px; min-height: 1.2em; }
+#libBody { overflow-y: auto; min-height: 0; display: grid; gap: 14px; align-content: start; }
+#libBody .voce { text-align: left; font-weight: 400; font-size: 15px; line-height: 1.4; width: 100%; }
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 6px; font-size: 15px; max-width: min(92vw, 520px); }
+@media (prefers-reduced-motion: no-preference) { button, .tab { transition: background-color .15s, border-color .15s; } }
+/* versione autonoma: impostazioni, scheda del cantiere, stato della copia nel Drive */
+html, body { margin: 0; }
+.drive { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 15px; color: var(--muted); }
+.drive .pallino { width: 10px; height: 10px; border-radius: 50%; background: var(--guide); flex: none; }
+.drive.ok .pallino { background: var(--sicuro); } .drive.attesa .pallino { background: var(--avviso); } .drive.errore .pallino { background: var(--divieto); }
+.drive .grow { flex: 1; min-width: 12em; }
+.campo { display: grid; gap: 4px; margin-top: 10px; }
+.campo > span { font-size: 15px; color: var(--muted); }
+.campo input[type=text], .campo input[type=email], .campo input[type=password], .campo textarea, .campo select { width: 100%; }
+.voce-ed { border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin-top: 10px; background: var(--sunk); display: grid; gap: 6px; }
+.voce-ed .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.voce-ed .row > input[type=text] { flex: 1; min-width: 9em; }
+.intest-img { max-width: 100%; display: block; }
+input[type=email], input[type=password] { width: 100%; min-width: 0; max-width: 100%; font: 17px/1.4 var(--font-body); color: var(--fg); background: var(--sunk); border: 1.5px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.anteprima-img { max-width: 100%; max-height: 90px; display: block; margin-top: 6px; border: 1px solid var(--line); background: #fff; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in">
+    <button type="button" class="back" id="btnBack" hidden>‹ Indietro</button>
+    <div class="bar-title">
+      <span class="eyebrow" id="barEyebrow">CSE · art. 92 D.Lgs. 81/2008</span>
+      <div class="tline"><h1 id="barTitle">Verbali di cantiere</h1><span class="salva" id="salva" aria-live="polite"></span></div>
+    </div>
+    <button type="button" class="back" id="btnPrev" hidden>Anteprima</button>
+    <button type="button" class="back" id="btnImp" hidden>Impostazioni</button>
+  </div>
+  <nav class="tabs" id="tabs" hidden aria-label="Passi del verbale"></nav>
+</header>
+
+<main class="wrap" id="main">
+  <section class="block"><h2>Apertura</h2><div class="muted">Caricamento dei cantieri…</div></section>
+</main>
+
+<div id="pad" class="sheet" hidden>
+  <div class="testa">
+    <div class="chi"><span class="ruolo" id="padRuolo"></span><span class="nome" id="padNome"></span></div>
+    <span class="eyebrow">Firma col dito</span>
+  </div>
+  <div id="paper">
+    <span class="x">×</span><span class="linea"></span><span class="hint" id="padHint">Firma sopra la linea</span>
+    <canvas id="canvas" aria-label="Spazio per la firma"></canvas>
+  </div>
+  <div class="piede">
+    <div id="padErr" role="status"></div>
+    <div class="row">
+      <button id="btnAnnulla" type="button">Annulla</button>
+      <button id="btnCancella" type="button">Cancella</button>
+      <button id="btnConferma" type="button" class="primary" disabled>Conferma firma</button>
+    </div>
+  </div>
+</div>
+
+<div id="lib" class="sheet" hidden>
+  <div class="testa"><h3>Prescrizioni tipo</h3><span class="eyebrow">Tocca per aggiungere</span></div>
+  <div id="libBody"></div>
+  <div class="piede"><div class="row"><button type="button" id="btnLibChiudi">Chiudi</button></div></div>
+</div>
+
+<div id="prev" class="sheet" hidden>
+  <div class="testa"><h3>Anteprima del verbale</h3><span class="eyebrow">In giallo: da completare</span></div>
+  <div id="prevBody"></div>
+  <div class="piede"><div class="row"><button type="button" class="primary" id="btnPrevChiudi">Chiudi l'anteprima</button></div></div>
+</div>
+
+<div id="toast" role="status" hidden></div>
+<input type="file" id="fileFoto" accept="image/*" multiple hidden>
+<input type="file" id="fileMezzo" accept="image/*" multiple hidden>
+<input type="file" id="fileImporta" accept=".json,application/json" hidden>
+<input type="file" id="fileIntest" accept="image/png,image/jpeg" hidden>
+
+<script src="config.js"></script>
+<script src="motore.js"></script>
+<script>
+(function () {
+  "use strict";
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function () {});
+  // ------------------------------------------------------------------ stato
+  // Chi fa il verbale: dalle impostazioni (impostazioni/profilo), così ogni professionista mette i suoi dati
+  var PROFILO_VUOTO = { nome: "", sottoscritto: "il sottoscritto", qualifica: "Coordinatore per la sicurezza in fase di esecuzione",
+    ruoloFirma: "Il Coordinatore per la sicurezza in fase di esecuzione", intestazione: "Studio Tecnico", pec: "", email: "", testata: "", piede: "" };
+  function prof() { var p = S.profilo || {}, o = {}; Object.keys(PROFILO_VUOTO).forEach(function (k) { o[k] = typeof p[k] === "string" && p[k].trim() ? p[k].trim() : PROFILO_VUOTO[k]; }); return o; }
+  function nomeCse() { return prof().nome || "[DA COMPLETARE: nome nelle impostazioni]"; }
+  function cseFirmatario() { var p = prof(); return { chiave: "cse", ruolo: p.ruoloFirma, nome: nomeCse() }; }
+  function avvertenza() {
+    var p = prof(), vie = [];
+    if (p.pec) vie.push("via posta certificata " + p.pec);
+    if (p.email) vie.push("via mail all'indirizzo " + p.email);
+    return "Si invitano i presenti a leggere attentamente il verbale ed a rilevare in forma scritta eventuali imprecisioni o punti che necessitino di maggiori spiegazioni e dettagli. In assenza di tali considerazioni, il presente verbale, anche se non firmato, si intende tacitamente accettato dai presenti. Eventuali note devono essere trasmesse allo scrivente entro 3 giorni" +
+      (vie.length ? ": " + vie.join("; ") : "") + ". Quanto concordato è da considerarsi come aggiornamento e revisione del PSC.";
+  }
+  function fraseVisita(v) {
+    var p = prof();
+    return "In data " + (v.data || "") + ", alle ore " + (v.oraInizio || "") + ", " + p.sottoscritto + " " + nomeCse() + ", in qualità di " + p.qualifica +
+      ", ha effettuato una visita nel cantiere in oggetto al fine di verificare l'applicazione delle disposizioni contenute nel piano di sicurezza e coordinamento e delle relative procedure di lavoro.";
+  }
+  function intestAnteprima() {
+    var p = prof();
+    if (p.testata) return h("img", { class: "intest-img", src: "_blob/" + p.testata, alt: "Intestazione" });
+    return h("div", { class: "intest" }, [p.intestazione || "", h("br"), nomeCse()]);
+  }
+  var PASSI = ["Presenti", "Lavori e mezzi", "Rilievi", "Foto", "Firme"];
+  var S = {
+    db: null, assets: null, sample: null, cantieri: {}, verbali: {}, archivio: {}, libreria: null, caricati: { c: false, v: false, a: false },
+    view: "home", cid: null, da: "cantiere", vid: null, v: null, firme: {}, step: 0, dirty: false, saving: false, saveT: null,
+    unsubF: null, proposta: null, ctl: null, armato: {}, rerenderOnBlur: false, nuovaPersona: false, nuovoMezzo: false,
+    downloads: null, pdf: null, pdfBusy: false, pdfPromise: null, pdfScarico: false
+  };
+  var main = document.getElementById("main"), tabs = document.getElementById("tabs");
+
+  // ------------------------------------------------------------------ utilità
+  var PROPS = ["value", "checked", "disabled", "hidden", "open", "selected"];
+  function h(tag, attrs, kids) {
+    var el = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      var val = attrs[k];
+      if (val === undefined || val === null) continue;
+      if (val === false && PROPS.indexOf(k) < 0) continue;
+      if (k === "class") el.className = val;
+      else if (k === "text") el.textContent = val;
+      else if (k.slice(0, 2) === "on") el.addEventListener(k.slice(2), val);
+      else if (PROPS.indexOf(k) >= 0) el[k] = val;
+      else el.setAttribute(k, val === true ? "" : val);
+    }
+    (kids || []).forEach(function (c) { if (c !== null && c !== undefined && c !== false) el.append(typeof c === "string" ? document.createTextNode(c) : c); });
+    return el;
+  }
+  function p2(n) { return String(n).padStart(2, "0"); }
+  function oggi() { var d = new Date(); return p2(d.getDate()) + "/" + p2(d.getMonth() + 1) + "/" + d.getFullYear(); }
+  function adesso() { var d = new Date(); return p2(d.getHours()) + ":" + p2(d.getMinutes()); }
+  function oraDi(iso) { try { var d = new Date(iso); return p2(d.getHours()) + ":" + p2(d.getMinutes()); } catch (e) { return ""; } }
+  function dataOra(iso) { try { var d = new Date(iso); return p2(d.getDate()) + "/" + p2(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + p2(d.getHours()) + ":" + p2(d.getMinutes()); } catch (e) { return ""; } }
+  function itToIso(s) { var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s || ""); return m ? m[3] + "-" + m[2] + "-" + m[1] : ""; }
+  function isoToIt(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ""); return m ? m[3] + "/" + m[2] + "/" + m[1] : ""; }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function toast(t) {
+    var el = document.getElementById("toast"); el.textContent = t; el.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(function () { el.hidden = true; }, 3500);
+  }
+  function lsGet(k) { try { var s = localStorage.getItem(k); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function locked() { return !S.v || S.v.stato !== "bozza"; }
+  // «Sono state rilevate le seguenti inosservanze»: solo con la spunta del CSE, mai dedotta dal testo
+  // (i verbali fatti prima del 17/11/2026 non hanno il campo: per loro vale la regola di allora, così restano come firmati)
+  function conIno(v) {
+    if (!v || v.nessunaInosservanza) return false;
+    if (v.conInosservanze === undefined) return (v.inosservanze || []).some(function (x) { return (x || "").trim(); });
+    return v.conInosservanze === true;
+  }
+  // riquadro dopo le caselle (richiesta del CSE il 17/11/2026): con le inosservanze spuntate «si dispone quanto segue»,
+  // con «nessuna inosservanza» spuntata «Rilievi o prescrizioni per i lavori in corso». Stesse frasi in genera_verbale.py.
+  var TIT_DISPONE = "In relazione alle inosservanze riscontrate si dispone quanto segue:", TIT_RILIEVI = "Rilievi o prescrizioni per i lavori in corso:";
+  function vecchioVerbale(v) { return !v || v.conInosservanze === undefined; }
+  function conRilievi(v) { return !!(v && v.nessunaInosservanza && !vecchioVerbale(v)); }
+  function cantiere() { return S.v ? (S.cantieri[S.v.cantiere] || {}) : {}; }
+  function salvaStato(t, err) { var el = document.getElementById("salva"); el.textContent = t || ""; el.classList.toggle("err", !!err); }
+
+  // ------------------------------------------------------------------ salvataggio
+  function touch() {
+    if (!S.v) return;
+    S.dirty = true; S.v.aggiornato = new Date().toISOString();
+    lsSet("verbale:" + S.vid, S.v);
+    salvaStato("Da salvare…");
+    clearTimeout(S.saveT); S.saveT = setTimeout(flush, 700);
+  }
+  function flush() {
+    if (!S.v || !S.db) return Promise.resolve();
+    if (S.saving) { S.again = true; return Promise.resolve(); }
+    if (!S.dirty) return Promise.resolve();
+    S.saving = true; S.dirty = false; salvaStato("Salvataggio…");
+    var id = S.vid, body = clone(S.v);
+    return S.db.doc("verbali/" + id).set(body).then(function () {
+      if (S.vid === id && !S.dirty) salvaStato("Salvato");
+    }, function (e) {
+      S.dirty = true;
+      salvaStato(e && e.code === "quota_exceeded" ? "Spazio esaurito" : "Non salvato: senza rete", true);
+    }).then(function () {
+      S.saving = false;
+      if (S.again) { S.again = false; if (S.dirty) flush(); }
+    });
+  }
+  window.addEventListener("online", function () { if (S.dirty) flush(); });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden" && S.dirty) flush(); });
+
+  // ------------------------------------------------------------------ dati
+  function avvia() {
+    var timer = setTimeout(function () { if (!S.caricati.c) toast("I dati non si riescono ancora a caricare: controlla la connessione."); }, 10000);
+    var use = function (n) { try { return window.claude && window.claude.use ? window.claude.use(n) : Promise.resolve(null); } catch (e) { return Promise.resolve(null); } };
+    use("assets").then(function (a) { S.assets = a; if (S.view === "edit" && (S.step === 3 || S.step === 1)) renderEdit(); }, function () {});
+    use("sample").then(function (s) { S.sample = s; if (S.view === "edit" && S.step === 2) renderEdit(); }, function () {});
+    use("downloads").then(function (d) { S.downloads = d; }, function () {});
+    use("db").then(function (db) {
+      if (!db) { clearTimeout(timer); main.replaceChildren(h("section", { class: "block" }, [h("h2", { text: "Pagina non collegata" }),
+        h("div", { text: "Su questo dispositivo la memoria del browser non è disponibile (navigazione privata?): apri l'app in una finestra normale." })])); return; }
+      S.db = db;
+      db.collection("cantieri").onSnapshot(function (qs) {
+        var m = {}; qs.docs.forEach(function (d) { m[d.id] = d.data(); });
+        S.cantieri = m; if (!qs.metadata.fromCache) { S.caricati.c = true; clearTimeout(timer); }
+        ridisegnaElenchi();
+      }, function () { toast("Elenco dei cantieri non disponibile: chiudi e riapri la pagina."); });
+      // verbali di prima dell'app, caricati da Claude come solo PDF: archivio/<commessa>-<nn> {cantiere, numero, data, pdf}
+      db.collection("archivio").onSnapshot(function (qs) {
+        var m = {}; qs.docs.forEach(function (d) { var x = d.data(); if (x && x.cantiere) (m[x.cantiere] = m[x.cantiere] || []).push(x); });
+        S.archivio = m; S.caricati.a = true;
+        if (S.view !== "edit") ridisegnaElenchi();
+      }, function () { S.caricati.a = true; });
+      db.collection("verbali").onSnapshot(function (qs) {
+        var m = {}; qs.docs.forEach(function (d) { m[d.id] = d.data(); });
+        S.verbali = m; S.caricati.v = true;
+        if (S.view !== "edit") ridisegnaElenchi();
+        else if (S.view === "edit" && m[S.vid]) {
+          var r = m[S.vid];
+          if (!S.dirty && !S.saving && r.aggiornato && S.v && r.aggiornato > (S.v.aggiornato || "")) {
+            S.v = clone(r);
+            var a = document.activeElement;
+            if (a && main.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) S.rerenderOnBlur = true; else renderEdit();
+          }
+        }
+      }, function () { toast("Elenco dei verbali non disponibile: chiudi e riapri la pagina."); });
+      db.doc("libreria/prescrizioni").onSnapshot(function (s) { S.libreria = s.exists ? s.data() : null; });
+      db.doc("impostazioni/profilo").onSnapshot(function (s) {
+        S.profilo = s.exists ? s.data() : null;
+        if (S.view === "home" || S.view === "impostazioni") ridisegnaElenchi();
+      });
+      // accesso a Google scaduto e rete presente: lo si rinnova adesso, prima di aprire qualsiasi verbale
+      if (window.MOTORE && MOTORE.rinnovoAllAvvio()) return;
+      var ultimo = lsGet("ultimoAperto");
+      if (ultimo) setTimeout(function () { if (S.view === "home" && S.verbali[ultimo] && S.verbali[ultimo].stato !== "archiviato") { S.da = "cantiere"; apri(ultimo); } }, 1500);
+    }, function () { clearTimeout(timer); });
+  }
+  main.addEventListener("focusout", function () {
+    if (S.rerenderOnBlur) setTimeout(function () { var a = document.activeElement; if (!(a && main.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) { S.rerenderOnBlur = false; renderEdit(); } }, 50);
+  });
+
+  // ------------------------------------------------------------------ home: una cartella per cantiere
+  // (richiesta del CSE il 13/11/2026: dentro ogni cartella un tasto «Nuovo verbale» e uno «Archivio verbali»)
+  var ICONE = {
+    cartella: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2.5 6.2c0-.94.76-1.7 1.7-1.7h4.6c.45 0 .88.18 1.2.5l1.6 1.6h8.2c.94 0 1.7.76 1.7 1.7v9.5c0 .94-.76 1.7-1.7 1.7H4.2c-.94 0-1.7-.76-1.7-1.7z"/><path fill="rgba(0,0,0,.14)" d="M2.5 9h19v.8h-19z"/></svg>',
+    piu: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M6 3h8l4 4v14H6z"/><path fill="none" stroke="currentColor" stroke-width="2" d="M14 3v4h4M12 11v7M8.5 14.5h7"/></svg>',
+    archivio: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M3 4h18v4H3zM5 8v12h14V8M10 12h4"/></svg>'
+  };
+  function icona(n) { var s = h("span", { class: "ico" }); s.innerHTML = ICONE[n]; return s; }
+  function barra(indietro, eyebrow, titolo) {
+    var b = document.getElementById("btnBack"); b.hidden = !indietro; if (indietro) b.textContent = indietro;
+    document.getElementById("btnPrev").hidden = true; tabs.hidden = true; salvaStato("");
+    document.getElementById("btnImp").hidden = S.view !== "home";
+    document.getElementById("barEyebrow").textContent = eyebrow;
+    document.getElementById("barTitle").textContent = titolo;
+  }
+  function ridisegnaElenchi() {
+    if (S.view === "impostazioni") { if (!S.impModifica) renderImpostazioni(); return; }
+    if (S.view === "scheda") return;   // la scheda del cantiere in modifica non si ridisegna sotto le dita
+    if (S.view === "home") renderHome();
+    else if (S.view === "cantiere") renderCantiere();
+    else if (S.view === "archivio") renderArchivio();
+  }
+  function inCorso(v) { return v.stato === "bozza" || v.stato === "firma"; }
+  function verbaliDi(cid) {
+    return Object.keys(S.verbali).filter(function (i) { return S.verbali[i].cantiere === cid; })
+      .sort(function (a, b) { return (Number(S.verbali[b].numero) || 0) - (Number(S.verbali[a].numero) || 0); });
+  }
+  function prossimoNumero(cid) {
+    var c = S.cantieri[cid] || {}, n = c.ultimoVerbale ? Number(c.ultimoVerbale.numero) || 0 : 0;
+    Object.keys(S.verbali).forEach(function (i) { var v = S.verbali[i]; if (v.cantiere === cid) n = Math.max(n, Number(v.numero) || 0); });
+    return n + 1;
+  }
+  // righe dell'archivio: verbali fatti con l'app (firmati o archiviati) + verbali di prima caricati come solo PDF
+  function righeArchivio(cid) {
+    var righe = verbaliDi(cid).filter(function (i) { return !inCorso(S.verbali[i]); })
+      .map(function (i) { return { id: i, v: S.verbali[i], numero: Number(S.verbali[i].numero) || 0 }; });
+    (S.archivio[cid] || []).forEach(function (a) {
+      var n = Number(a.numero) || 0;
+      if (!righe.some(function (r) { return r.numero === n; })) righe.push({ pdf: a, numero: n });
+    });
+    return righe.sort(function (x, y) { return y.numero - x.numero; });
+  }
+  function etichettaStato(s) { return { bozza: "In compilazione", firma: "Alla firma", firmato: "Firmato · da archiviare", archiviato: "Archiviato" }[s] || s; }
+  function cardVerbale(id, v, da) {
+    return h("button", { type: "button", class: "card", onclick: function () { S.da = da || "cantiere"; apri(id); } }, [
+      h("span", { class: "stato " + v.stato, text: etichettaStato(v.stato) }),
+      h("h3", { text: "Verbale n. " + p2(v.numero) }),
+      h("span", { class: "meta", text: (v.data || "") + (v.oraInizio ? ", ore " + v.oraInizio + (v.oraFine ? "–" + v.oraFine : "") : "") })
+    ]);
+  }
+  function cardPdf(a) {
+    return h("button", { type: "button", class: "card", onclick: function () { inviaPdfArchivio(a); } }, [
+      h("span", { class: "stato archiviato", text: "PDF" }),
+      h("h3", { text: "Verbale n. " + p2(a.numero) }),
+      h("span", { class: "meta", text: (a.data || "") + (a.pdf && a.pdf.pagine ? " · " + a.pdf.pagine + " pagine" : "") + " · tocca per inviarlo o salvarlo" })
+    ]);
+  }
+  function cantieriAttivi() {
+    return Object.keys(S.cantieri).filter(function (k) { return S.cantieri[k].attivo !== false; })
+      .sort(function (a, b) { return (S.cantieri[a].nome || a).localeCompare(S.cantieri[b].nome || b, "it"); });
+  }
+  function renderHome() {
+    S.view = "home"; S.cid = null;
+    barra(null, "CSE · art. 92 D.Lgs. 81/2008", "Verbali di cantiere");
+    var cids = cantieriAttivi();
+    var sec = h("section", { class: "block" }, [h("h2", { text: "Cantieri" })]);
+    if (!cids.length) sec.append(h("div", { class: "muted", text: S.caricati.c ? "Nessun cantiere ancora. Aggiungine uno con «Nuovo cantiere» qui sotto, oppure importalo dalle Impostazioni." : "Caricamento dei cantieri…" }));
+    cids.forEach(function (k) {
+      var c = S.cantieri[k], u = c.ultimoVerbale, vs = verbaliDi(k).map(function (i) { return S.verbali[i]; });
+      var corso = vs.filter(inCorso), firm = vs.filter(function (v) { return v.stato === "firmato"; });
+      sec.append(h("button", { type: "button", class: "card cartella", onclick: function () { vaiCantiere(k); } }, [
+        icona("cartella"),
+        h("span", { class: "testo" }, [
+          h("h3", { text: c.nome || k }),
+          h("span", { class: "meta", text: "Commessa " + (c.commessa || k) + (u ? " · ultimo verbale n. " + p2(u.numero) + " del " + u.data : "") }),
+          corso.length ? h("span", { class: "chip", text: corso.length === 1 ? "Verbale n. " + p2(corso[0].numero) + " in corso" : corso.length + " verbali in corso" }) : null,
+          firm.length ? h("span", { class: "chip green", text: firm.length === 1 ? "N. " + p2(firm[0].numero) + " firmato, da archiviare" : firm.length + " firmati, da archiviare" }) : null
+        ]),
+        h("span", { class: "freccia", "aria-hidden": "true", text: "›" })
+      ]));
+    });
+    sec.append(h("button", { type: "button", class: "link", text: "+ Nuovo cantiere", onclick: function () { apriScheda(null); } }));
+    main.replaceChildren(rigaDrive(), sec);
+  }
+  function vaiCantiere(cid) { S.cid = cid; S.armato = {}; renderCantiere(); window.scrollTo(0, 0); }
+  function vaiArchivio(cid) { S.cid = cid; renderArchivio(); window.scrollTo(0, 0); }
+  function renderCantiere() {
+    var cid = S.cid, c = S.cantieri[cid]; if (!c) return renderHome();
+    S.view = "cantiere";
+    barra("‹ Cantieri", "Commessa " + (c.commessa || cid), c.nome || cid);
+    var out = [], vs = verbaliDi(cid);
+    var corso = vs.filter(function (i) { return inCorso(S.verbali[i]); });
+    if (corso.length) out.push(h("section", { class: "block" }, [h("h2", { text: "In corso" })].concat(corso.map(function (i) { return cardVerbale(i, S.verbali[i], "cantiere"); }))));
+    var n = prossimoNumero(cid), ap = (c.prescrizioniAperte || []).length;
+    var righe = righeArchivio(cid), daArch = righe.filter(function (r) { return r.v && r.v.stato === "firmato"; }).length;
+    var u = c.ultimoVerbale, ultimo = righe.length ? righe[0] : null;
+    var sotto = ultimo ? "Ultimo: n. " + p2(ultimo.numero) + " del " + ((ultimo.v || ultimo.pdf).data || "") : u ? "Ultimo: n. " + p2(u.numero) + " del " + u.data + ", in commessa" : "Ancora nessun verbale";
+    var armato = S.armato.nuovo && corso.length;
+    out.push(h("div", { class: "tiles" }, [
+      h("button", { type: "button", class: "tile " + (armato ? "warn" : "primary"), onclick: function () {
+        if (corso.length && !S.armato.nuovo) {
+          S.armato.nuovo = true; renderCantiere();
+          setTimeout(function () { if (S.armato.nuovo) { S.armato.nuovo = false; if (S.view === "cantiere") renderCantiere(); } }, 4000);
+          return;
+        }
+        S.armato = {}; nuovoVerbale(cid); } }, [
+        icona("piu"),
+        h("span", { class: "tt", text: armato ? "Tocca di nuovo" : "Nuovo verbale" }),
+        h("span", { class: "ts", text: armato ? "C'è già il n. " + p2(S.verbali[corso[0]].numero) + " in corso: così ne apri un altro, il n. " + p2(n) + "." :
+          "Sarà il n. " + p2(n) + (ap ? " · " + ap + (ap === 1 ? " prescrizione aperta da verificare" : " prescrizioni aperte da verificare") : "") })
+      ]),
+      h("button", { type: "button", class: "tile", onclick: function () { vaiArchivio(cid); } }, [
+        icona("archivio"),
+        h("span", { class: "tt", text: "Archivio verbali" }),
+        h("span", { class: "ts", text: sotto + (daArch ? " · " + daArch + " da archiviare" : "") })
+      ])
+    ]));
+    out.push(h("button", { type: "button", class: "link", text: "Dati del cantiere: imprese, persone, mezzi, prescrizioni aperte", onclick: function () { apriScheda(cid); } }));
+    main.replaceChildren.apply(main, out);
+  }
+  function renderArchivio() {
+    var cid = S.cid, c = S.cantieri[cid]; if (!c) return renderHome();
+    S.view = "archivio";
+    barra("‹ Indietro", c.nome || cid, "Archivio verbali");
+    var righe = righeArchivio(cid), out = [];
+    var sec = h("section", { class: "block" }, [h("h2", { text: righe.length ? righe.length + (righe.length === 1 ? " verbale" : " verbali") + ", dal più recente" : "Verbali" })]);
+    if (!righe.length) sec.append(h("div", { class: "muted", text: S.caricati.v && S.caricati.a ? "Nessun verbale ancora nell'app per questo cantiere." : "Caricamento…" }));
+    righe.forEach(function (r) { sec.append(r.v ? cardVerbale(r.id, r.v, "archivio") : cardPdf(r.pdf)); });
+    out.push(sec);
+    // i verbali fatti prima dell'app stanno nella cartella della commessa
+    var u = c.ultimoVerbale, fino = righe.length ? righe[righe.length - 1].numero - 1 : (u ? Number(u.numero) || 0 : 0);
+    if (fino >= 1) out.push(h("div", { class: "muted small", text: "I verbali " + (fino === 1 ? "n. 01" : "dal n. 01 al n. " + p2(fino)) +
+      (!righe.length && u ? " (l'ultimo è del " + u.data + ")" : "") + " sono nella cartella della commessa " + (c.commessa || cid) + ", non nell'app." }));
+    if (righe.some(function (r) { return r.v && r.v.stato === "firmato"; })) out.push(h("div", { class: "muted small",
+      text: "Per i verbali «da archiviare» scrivi a Claude «archivia il verbale»: prepara Word e PDF, li mette in commessa dopo il tuo ok e prepara la mail." }));
+    main.replaceChildren.apply(main, out);
+  }
+  // ------------------------------------------------------------------ versione autonoma: copia nel Drive, impostazioni, scheda del cantiere
+  function rigaDrive() {
+    var st = window.MOTORE ? MOTORE.stato() : null; if (!st) return h("span");
+    var cl = "drive", testo, az = null, n = st.daInviare, mod = n + (n === 1 ? " modifica" : " modifiche");
+    if (st.memoriaSoltanto) { testo = "Memoria del dispositivo non disponibile: i dati si perdono chiudendo l'app."; cl += " errore"; }
+    else if (!st.configurato) { testo = "Copia nel Google Drive non ancora attiva: per ora i dati restano su questo dispositivo."; cl += " attesa"; }
+    else if (!st.collegato) { testo = "Google Drive non collegato: i dati restano solo su questo dispositivo."; cl += " attesa"; az = ["Collega", function () { MOTORE.accedi(); }]; }
+    else if (!st.tokenValido || st.errore === "accesso") { testo = (n ? mod + " da copiare nel Drive: " : "") + "serve di nuovo l'accesso a Google."; cl += " attesa"; az = ["Accedi", function () { MOTORE.accedi(); }]; }
+    else if (st.inCorso) { testo = "Copia nel Drive in corso…"; cl += " attesa"; }
+    else if (st.errore) { testo = "Copia nel Drive non riuscita (" + st.errore + ")."; cl += " errore"; az = ["Riprova", function () { MOTORE.sincronizza(); }]; }
+    else if (n) { testo = mod + " da copiare nel Drive."; cl += " attesa"; az = ["Copia ora", function () { MOTORE.sincronizza(); }]; }
+    else { testo = "Drive aggiornato" + (st.ultima ? " il " + dataOra(st.ultima) : "") + "."; cl += " ok"; }
+    return h("div", { class: cl, id: "rigaDrive" }, [h("span", { class: "pallino", "aria-hidden": "true" }), h("span", { class: "grow", text: testo }),
+      az ? h("button", { type: "button", text: az[0], onclick: az[1] }) : null]);
+  }
+  window.addEventListener("vc:stato", function () { var el = document.getElementById("rigaDrive"); if (el) el.replaceWith(rigaDrive()); });
+  function campo(etichetta, el, nota) { return h("label", { class: "campo" }, [h("span", { text: etichetta }), el, nota ? h("span", { class: "small", text: nota }) : null]); }
+  function salvaProfilo(parz) {
+    var d = clone(S.profilo || {}); Object.keys(parz).forEach(function (k) { d[k] = parz[k]; });
+    return S.db.doc("impostazioni/profilo").set(d);
+  }
+  function renderImpostazioni() {
+    S.view = "impostazioni";
+    barra("‹ Cantieri", "Verbali di cantiere", "Impostazioni");
+    var p = prof(), bozza = clone(S.profilo || {}), out = [];
+    var inp = function (k, tipo, ph) {
+      return h("input", { type: tipo || "text", value: bozza[k] || "", placeholder: ph || PROFILO_VUOTO[k] || "",
+        oninput: function (e) { bozza[k] = e.target.value; S.impModifica = true; } });
+    };
+    var sel = h("select", { onchange: function (e) { bozza.sottoscritto = e.target.value; S.impModifica = true; } },
+      ["il sottoscritto", "la sottoscritta"].map(function (x) { return h("option", { value: x, text: x, selected: p.sottoscritto === x }); }));
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Chi fa i verbali" }),
+      campo("Nome, con il titolo", inp("nome", "text", "Ing. Mario Rossi")),
+      campo("Nel testo del verbale", sel, "«In data …, " + p.sottoscritto + " " + (p.nome || "…") + ", in qualità di … ha effettuato una visita…»"),
+      campo("In qualità di", inp("qualifica")),
+      campo("Sopra la firma", inp("ruoloFirma")),
+      campo("PEC (nell'avvertenza dei tre giorni)", inp("pec", "email", "nome@pec.it")),
+      campo("Email (nell'avvertenza dei tre giorni)", inp("email", "email", "nome@studio.it")),
+      campo("Riga sopra il nome, se non usi la carta intestata", inp("intestazione")),
+      h("div", { class: "row", style: "margin-top:12px" }, [h("button", { type: "button", class: "primary grow", text: "Salva", onclick: function () {
+        var parz = {}; ["nome", "sottoscritto", "qualifica", "ruoloFirma", "pec", "email", "intestazione"].forEach(function (k) { if (bozza[k] !== undefined) parz[k] = String(bozza[k] || "").trim(); });
+        if (!parz.sottoscritto) parz.sottoscritto = p.sottoscritto;
+        salvaProfilo(parz).then(function () { S.impModifica = false; toast("Impostazioni salvate."); renderImpostazioni(); }, function () { toast("Impostazioni non salvate."); });
+      } })])
+    ]));
+    var immagine = function (k, titolo) {
+      var id = p[k];
+      return h("div", { class: "campo" }, [h("span", { text: titolo }),
+        id ? h("img", { class: "anteprima-img", src: "_blob/" + id, alt: titolo }) : h("span", { class: "small", text: "Nessuna immagine." }),
+        h("div", { class: "row" }, [
+          h("button", { type: "button", text: id ? "Cambia" : "Carica l'immagine", onclick: function () { S.intestK = k; document.getElementById("fileIntest").click(); } }),
+          id ? h("button", { type: "button", class: "warn", text: "Togli", onclick: function () { var o = {}; o[k] = ""; salvaProfilo(o).then(function () { if (S.assets) S.assets.delete(id); }); } }) : null])]);
+    };
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Carta intestata (facoltativa)" }),
+      h("div", { class: "muted", text: "Immagini larghe come il foglio A4: la testata e il piè di pagina della tua carta intestata. Senza immagini il PDF porta il nome in alto e i recapiti in basso." }),
+      immagine("testata", "Testata"), immagine("piede", "Piè di pagina")]));
+    var st = window.MOTORE ? MOTORE.stato() : {};
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Copia nel Google Drive" }),
+      h("div", { class: "muted", text: "Verbali, foto, firme e PDF vanno nella cartella «Verbali di cantiere» del tuo Google Drive: li ritrovi sul computer e su un altro telefono. L'app vede solo i file che crea lei, non il resto del Drive." }),
+      rigaDrive(),
+      st.email ? h("div", { class: "small muted", text: "Account Google: " + st.email }) : null,
+      st.collegato ? h("button", { type: "button", class: "link", text: S.armato.scollega ? "Tocca di nuovo per scollegare" : "Scollega Google Drive da questo dispositivo", onclick: function () {
+        if (!S.armato.scollega) { S.armato = { scollega: true }; renderImpostazioni(); setTimeout(function () { if (S.armato.scollega) { S.armato = {}; if (S.view === "impostazioni") renderImpostazioni(); } }, 4000); return; }
+        S.armato = {}; MOTORE.scollega(); renderImpostazioni(); } }) : null]));
+    var chiave = window.MOTORE ? MOTORE.chiaveClaude() : "";
+    var inK = h("input", { type: "password", value: "", autocomplete: "off", placeholder: chiave ? "Chiave salvata (finisce con …" + chiave.slice(-4) + ")" : "sk-ant-…",
+      oninput: function () { S.impModifica = true; } });
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Claude, per riscrivere gli appunti" }),
+      h("div", { class: "muted", text: "Serve per «Scrivi il verbale con Claude». La chiave si crea su console.anthropic.com e resta solo su questo dispositivo; ogni riscrittura costa pochi centesimi. Senza chiave il verbale si scrive a mano." }),
+      campo("Chiave", inK),
+      h("div", { class: "row" }, [
+        h("button", { type: "button", class: "primary grow", text: "Salva la chiave", onclick: function () {
+          var k = inK.value.trim(); if (!k) { toast("Incolla prima la chiave."); return; }
+          MOTORE.chiaveClaude(k); S.impModifica = false; toast("Chiave salvata."); renderImpostazioni(); } }),
+        chiave ? h("button", { type: "button", class: "warn", text: "Togli", onclick: function () { MOTORE.chiaveClaude(""); renderImpostazioni(); } }) : null])]));
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Importa" }),
+      h("div", { class: "muted", text: "Cantieri (imprese, persone, mezzi, prescrizioni aperte) o prescrizioni tipo da un file JSON, per esempio preparato sul computer." }),
+      h("button", { type: "button", text: "Scegli il file", onclick: function () { document.getElementById("fileImporta").click(); } }),
+      h("div", { class: "small muted", text: S.libreria ? "Prescrizioni tipo presenti: " + ((S.libreria.categorie || []).length) + " categorie." : "Prescrizioni tipo non ancora importate." })]));
+    main.replaceChildren.apply(main, out);
+  }
+  document.getElementById("btnImp").addEventListener("click", function () { S.impModifica = false; S.armato = {}; renderImpostazioni(); window.scrollTo(0, 0); });
+  document.getElementById("fileImporta").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+    f.text().then(MOTORE.importa).then(function (dd) {
+      toast("Importato: " + dd.map(function (d) { return d.indexOf("cantieri/") === 0 ? "cantiere " + d.slice(9) : d === "libreria/prescrizioni" ? "prescrizioni tipo" : "impostazioni"; }).join(", ") + ".");
+      if (S.view === "impostazioni") renderImpostazioni();
+    }, function (err) { toast((err && err.message) || "File non importato."); });
+  });
+  document.getElementById("fileIntest").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0], k = S.intestK; e.target.value = ""; if (!f || !k || !S.assets) return;
+    var vecchio = prof()[k];
+    S.assets.upload(f, { type: f.type || "image/png" }).then(function (a) {
+      var o = {}; o[k] = a.id; return salvaProfilo(o).then(function () { if (vecchio) S.assets.delete(vecchio); });
+    }).then(function () { toast("Immagine salvata."); }, function () { toast("Immagine non salvata."); });
+  });
+
+  // scheda del cantiere: nuova o da correggere (le persone e i mezzi vengono dai POS)
+  function cantiereVuoto() {
+    return { nome: "", commessa: "", lavori: "", committente: "", indirizzo: "", nomeFile: "", attivo: true, altriPresenti: [],
+      imprese: [{ nome: "", tipo: "affidataria", persone: [], mezzi: [] }], prescrizioniAperte: [], firmatari: [], ultimoVerbale: null };
+  }
+  function apriScheda(cid) {
+    S.scId = cid; S.sc = cid && S.cantieri[cid] ? clone(S.cantieri[cid]) : cantiereVuoto();
+    ["altriPresenti", "imprese", "prescrizioniAperte", "firmatari"].forEach(function (k) { if (!Array.isArray(S.sc[k])) S.sc[k] = []; });
+    S.sc.imprese.forEach(function (i) { if (!Array.isArray(i.persone)) i.persone = []; if (!Array.isArray(i.mezzi)) i.mezzi = []; });
+    S.armato = {}; renderScheda(); window.scrollTo(0, 0);
+  }
+  function renderScheda() {
+    var c = S.sc; if (!c) return renderHome();
+    S.view = "scheda";
+    barra("‹ Indietro", S.scId ? "Commessa " + (c.commessa || S.scId) : "Nuovo cantiere", c.nome || "Dati del cantiere");
+    var testo = function (obj, k, ph, area) {
+      return area ? h("textarea", { placeholder: ph || "", text: obj[k] || "", oninput: function (e) { obj[k] = e.target.value; } })
+        : h("input", { type: "text", value: obj[k] || "", placeholder: ph || "", oninput: function (e) { obj[k] = e.target.value; } });
+    };
+    var togli = function (lista, i, chiave, etichetta) {
+      return h("button", { type: "button", class: "warn", text: S.armato[chiave] ? "Tocca di nuovo" : (etichetta || "Togli"), onclick: function () {
+        if (!S.armato[chiave]) { S.armato = {}; S.armato[chiave] = true; renderScheda(); return; }
+        lista.splice(i, 1); S.armato = {}; renderScheda(); } });
+    };
+    var out = [];
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Cantiere" }),
+      campo("Nome breve (compare nell'elenco)", testo(c, "nome", "Es. Ponte sul canale, SP 12")),
+      S.scId ? null : campo("Codice della commessa", testo(c, "commessa", "Es. 2026_01"), "Distingue il cantiere: dopo il salvataggio non si cambia più."),
+      campo("Lavori", testo(c, "lavori", "Oggetto dei lavori, come nel PSC", true)),
+      campo("Committente", testo(c, "committente")),
+      campo("Indirizzo del cantiere", testo(c, "indirizzo")),
+      campo("Nome del file PDF (facoltativo)", testo(c, "nomeFile", "Verbale {nn} {cantiere} {gg}_{mm}_{aaaa}"), "{n} numero, {nn} numero a due cifre, {gg} {mm} {aaaa} data, {cantiere} nome breve."),
+      h("label", { class: "check" }, [h("input", { type: "checkbox", checked: c.attivo !== false, onchange: function (e) { c.attivo = e.target.checked; } }),
+        h("span", { class: "t" }, [h("b", { text: "Cantiere attivo" }), h("span", { text: "Se lo togli il cantiere sparisce dall'elenco; i verbali restano." })])])
+    ]));
+    var sezA = h("section", { class: "block" }, [h("h2", { text: "Committente e direzione lavori" }),
+      h("div", { class: "muted small", text: "Compaiono tra i presenti da spuntare (DL, RUP, collaboratori)." })]);
+    c.altriPresenti.forEach(function (a, i) {
+      sezA.append(h("div", { class: "voce-ed" }, [h("div", { class: "row" }, [testo(a, "nome", "Es. Ing. Nome Cognome"), togli(c.altriPresenti, i, "a" + i)]),
+        testo(a, "ruolo", "Ruolo, es. Direttore dei lavori")]));
+    });
+    sezA.append(h("button", { type: "button", class: "link", text: "+ Aggiungi persona", onclick: function () { c.altriPresenti.push({ nome: "", ruolo: "" }); renderScheda(); } }));
+    out.push(sezA);
+    c.imprese.forEach(function (imp, ii) {
+      var sez = h("section", { class: "block" }, [h("h2", { text: "Impresa " + (ii + 1) })]);
+      sez.append(campo("Ragione sociale", testo(imp, "nome", "Es. Impresa S.r.l.")),
+        campo("Ruolo nel cantiere", h("select", { onchange: function (e) { imp.tipo = e.target.value; } },
+          [["affidataria", "Affidataria"], ["subappaltatrice", "Subappaltatrice"], ["autonomo", "Lavoratore autonomo"]].map(function (o) {
+            return h("option", { value: o[0], text: o[1], selected: (imp.tipo || "subappaltatrice") === o[0] }); }))));
+      sez.append(h("div", { class: "muted small", style: "margin-top:10px", text: "Persone autorizzate (dal POS)" }));
+      imp.persone.forEach(function (pp, pi) {
+        sez.append(h("div", { class: "voce-ed" }, [
+          h("div", { class: "row" }, [h("input", { type: "text", value: pp.nome || "", placeholder: "Nome Cognome", oninput: function (e) { pp.nome = e.target.value; delete pp.cognome; } }),
+            togli(imp.persone, pi, "p" + ii + "_" + pi)]),
+          testo(pp, "ruolo", "Mansione o ruolo"),
+          testo(pp, "nota", "Nota per te, facoltativa (es. formazione da completare)"),
+          h("label", { class: "check" }, [h("input", { type: "checkbox", checked: !!pp.rappresentante, onchange: function (e) { pp.rappresentante = e.target.checked; } }),
+            h("span", { class: "t" }, [h("b", { text: "Rappresentante dell'impresa" }), h("span", { text: "Datore di lavoro, capocantiere o referente: può firmare il verbale." })])])
+        ]));
+      });
+      sez.append(h("button", { type: "button", class: "link", text: "+ Aggiungi persona", onclick: function () { imp.persone.push({ nome: "", ruolo: "" }); renderScheda(); } }));
+      sez.append(h("div", { class: "muted small", style: "margin-top:10px", text: "Mezzi e attrezzature (dal POS)" }));
+      imp.mezzi.forEach(function (m, mi) {
+        sez.append(h("div", { class: "voce-ed" }, [h("div", { class: "row" }, [h("input", { type: "text", value: m || "", placeholder: "Es. Escavatore cingolato",
+          oninput: function (e) { imp.mezzi[mi] = e.target.value; } }), togli(imp.mezzi, mi, "m" + ii + "_" + mi)])]));
+      });
+      sez.append(h("button", { type: "button", class: "link", text: "+ Aggiungi mezzo", onclick: function () { imp.mezzi.push(""); renderScheda(); } }));
+      sez.append(h("div", { class: "row", style: "margin-top:10px" }, [togli(c.imprese, ii, "i" + ii, "Togli l'impresa")]));
+      out.push(sez);
+    });
+    out.push(h("button", { type: "button", text: "+ Aggiungi impresa", onclick: function () {
+      c.imprese.push({ nome: "", tipo: c.imprese.length ? "subappaltatrice" : "affidataria", persone: [], mezzi: [] }); renderScheda(); } }));
+    var rapp = [];
+    c.imprese.forEach(function (imp) { imp.persone.forEach(function (pp) {
+      if (pp.rappresentante && (pp.nome || "").trim()) rapp.push({ nome: pp.nome.trim() + " – " + (imp.nome || "").trim(), ruolo: imp.tipo === "affidataria" ? "Per l'impresa affidataria" : "Per l'impresa " + (imp.nome || "").trim() }); }); });
+    var att = (c.firmatari || []).filter(function (f) { return f.chiave === "impresa"; })[0];
+    var opz = [h("option", { value: "", text: "Nessuno: lo scegli in cantiere", selected: !att })];
+    if (att && !rapp.some(function (r) { return r.nome === att.nome; })) opz.push(h("option", { value: "tieni", text: att.nome, selected: true }));
+    rapp.forEach(function (r, i) { opz.push(h("option", { value: String(i), text: r.nome, selected: !!(att && att.nome === r.nome) })); });
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Chi firma per l'impresa" }),
+      campo("Firmatario proposto nei nuovi verbali", h("select", { onchange: function (e) {
+        var v = e.target.value; if (v === "tieni") return;
+        c.firmatari = (c.firmatari || []).filter(function (f) { return f.chiave !== "impresa"; });
+        if (v !== "") { var r = rapp[Number(v)]; c.firmatari.unshift({ chiave: "impresa", nome: r.nome, ruolo: r.ruolo }); } } }, opz),
+        rapp.length ? null : "Segna prima una persona come «Rappresentante dell'impresa».")]));
+    var sezP = h("section", { class: "block" }, [h("h2", { text: "Prescrizioni aperte" }),
+      h("div", { class: "muted small", text: "Si ripropongono nel prossimo verbale, per segnarne l'esito." })]);
+    c.prescrizioniAperte.forEach(function (pa, i) {
+      sezP.append(h("div", { class: "voce-ed" }, [h("div", { class: "row" }, [h("input", { type: "text", value: pa.rif || "", placeholder: "Verbale n.", style: "max-width:9em",
+        oninput: function (e) { pa.rif = e.target.value; } }), togli(c.prescrizioniAperte, i, "pa" + i)]), testo(pa, "testo", "Testo della prescrizione", true)]));
+    });
+    sezP.append(h("button", { type: "button", class: "link", text: "+ Aggiungi prescrizione", onclick: function () { c.prescrizioniAperte.push({ rif: "", testo: "" }); renderScheda(); } }));
+    out.push(sezP);
+    var uv = c.ultimoVerbale || {};
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Numerazione" }),
+      campo("Numero dell'ultimo verbale fatto fuori dall'app", h("input", { type: "text", inputmode: "numeric", value: uv.numero ? String(uv.numero) : "", placeholder: "Es. 8",
+        oninput: function (e) { var n = parseInt(e.target.value, 10); c.ultimoVerbale = n ? { numero: n, data: (c.ultimoVerbale && c.ultimoVerbale.data) || "" } : null; } }),
+        "Il primo verbale nell'app prende il numero successivo."),
+      campo("Data dell'ultimo verbale", h("input", { type: "text", inputmode: "numeric", value: uv.data || "", placeholder: "gg/mm/aaaa",
+        oninput: function (e) { if (c.ultimoVerbale) c.ultimoVerbale.data = e.target.value.trim(); } }))]));
+    out.push(h("div", { class: "row" }, [
+      h("button", { type: "button", text: "Annulla", onclick: function () { var cs = S.scId; S.sc = null; if (cs && S.cantieri[cs]) vaiCantiere(cs); else renderHome(); } }),
+      h("button", { type: "button", class: "primary grow", text: "Salva il cantiere", onclick: salvaScheda })]));
+    main.replaceChildren.apply(main, out);
+  }
+  function salvaScheda() {
+    var c = S.sc; if (!c || !S.db) return;
+    c.nome = (c.nome || "").trim();
+    if (!c.nome) { toast("Scrivi il nome del cantiere."); return; }
+    c.altriPresenti = c.altriPresenti.filter(function (a) { return (a.nome || "").trim(); });
+    c.imprese = c.imprese.filter(function (i) { return (i.nome || "").trim(); });
+    c.imprese.forEach(function (i) {
+      i.nome = i.nome.trim();
+      i.persone = i.persone.filter(function (pp) { return (pp.nome || "").trim(); });
+      i.mezzi = i.mezzi.map(function (m) { return (m || "").trim(); }).filter(Boolean);
+    });
+    c.prescrizioniAperte = c.prescrizioniAperte.filter(function (pa) { return (pa.testo || "").trim(); });
+    var id = S.scId;
+    if (!id) {
+      id = ((c.commessa || "").trim() || c.nome).replace(/[^A-Za-z0-9_.-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60) || ("c" + Date.now());
+      if (S.cantieri[id]) { toast("C'è già un cantiere con questo codice: cambialo."); return; }
+      c.commessa = (c.commessa || "").trim() || id;
+    }
+    S.db.doc("cantieri/" + id).set(c).then(function () { S.sc = null; S.scId = id; toast("Cantiere salvato."); vaiCantiere(id); },
+      function () { toast("Cantiere non salvato."); });
+  }
+
+  function inviaPdfArchivio(a) {
+    var c = S.cantieri[a.cantiere] || {}, oggetto = (c.nome || a.cantiere) + " - verbale di visita in cantiere n. " + p2(a.numero) + " del " + (a.data || "");
+    if (!a.pdf || !a.pdf.id) { toast("Per questo verbale il PDF non è nell'app."); return; }
+    toast("Scarico il PDF…");
+    fetch("_blob/" + a.pdf.id).then(function (r) { if (!r.ok) throw new Error("Il PDF non si trova più nell'app."); return r.blob(); }).then(function (b) {
+      var p = { blob: b, nome: a.pdf.nome || ("verbale " + p2(a.numero) + ".pdf") };
+      var tocco = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+      if (tocco && navigator.canShare) {
+        var file = new File([b], p.nome, { type: "application/pdf" }), puo = false;
+        try { puo = navigator.canShare({ files: [file] }); } catch (e) { puo = false; }
+        if (puo) { navigator.share({ files: [file], title: oggetto, text: oggetto }).then(function () {}, function (e) { if (e && e.name === "AbortError") return; salvaPdf(p); }); return; }
+      }
+      salvaPdf(p);
+    }, function (e) { toast((e && e.message) || "Il PDF non si è potuto scaricare."); });
+  }
+
+  function nuovoVerbale(cid) {
+    var c = S.cantieri[cid]; if (!c || !S.db) return;
+    var n = prossimoNumero(cid);
+    var id = cid + "-" + p2(n), ora = new Date().toISOString();
+    var v = {
+      cantiere: cid, numero: n, data: oggi(), oraInizio: adesso(), oraFine: "", stato: "bozza",
+      presenti: [], mezzi: [], lavorazioni: "", programma: "", appunti: "", inosservanze: [], disposizioni: [],
+      nessunaInosservanza: false, conInosservanze: false, pericolo: { presente: false, motivo: "" }, prescrizioniLavorazioni: "", note: "",
+      esitoPrecedenti: (c.prescrizioniAperte || []).map(function (p) { return { rif: p.rif || "", testo: p.testo || "", esito: "" }; }),
+      foto: [], firmatari: (c.firmatari || []).concat([cseFirmatario()]), creato: ora, aggiornato: ora
+    };
+    S.db.doc("verbali/" + id).set(v).then(function () { S.verbali[id] = v; S.da = "cantiere"; apri(id, 0); },
+      function () { toast("Il verbale non si è potuto creare: controlla la connessione."); });
+  }
+
+  function apri(id, step) {
+    var r = S.verbali[id]; if (!r) return;
+    var b = lsGet("verbale:" + id);
+    S.vid = id; S.v = clone(r); S.dirty = false; S.proposta = null; S.armato = {}; S.nuovaPersona = null; S.nuovoMezzo = false; S.impMezzo = null;
+    if (S.pdf && S.pdf.vid !== id) S.pdf = null;
+    if (b && b.aggiornato && b.aggiornato > (r.aggiornato || "") && r.stato === "bozza") { S.v = b; S.dirty = true; flush(); }
+    S.step = typeof step === "number" ? step : (S.v.stato === "bozza" ? 0 : 4);
+    S.view = "edit"; S.cid = S.v.cantiere; lsSet("ultimoAperto", id);
+    if (S.unsubF) S.unsubF();
+    S.firme = {};
+    S.unsubF = S.db.collection("firme").where("verbale", "==", id).onSnapshot(function (qs) {
+      var m = {}; qs.docs.forEach(function (d) { var x = d.data(); if (x && x.chiave) m[x.chiave] = x; });
+      S.firme = m; if (S.view === "edit" && S.step === 4 && S.vid === id) renderEdit();
+    }, function () { toast("Le firme non si riescono a leggere."); });
+    salvaStato("Salvato");
+    renderEdit(); window.scrollTo(0, 0);
+  }
+  function chiudi() {
+    flush();
+    if (S.unsubF) { S.unsubF(); S.unsubF = null; }
+    lsDel("ultimoAperto"); S.vid = null; S.v = null; S.armato = {};
+    if (S.cid && S.cantieri[S.cid]) { if (S.da === "archivio") renderArchivio(); else renderCantiere(); } else renderHome();
+    window.scrollTo(0, 0);
+  }
+  // indietro: dal verbale alla cartella (o all'archivio, se aperto da lì), dall'archivio alla cartella, dalla cartella ai cantieri
+  document.getElementById("btnBack").addEventListener("click", function () {
+    if (S.view === "edit") chiudi();
+    else if (S.view === "impostazioni") { S.impModifica = false; renderHome(); }
+    else if (S.view === "scheda") { var cs = S.scId; S.sc = null; if (cs && S.cantieri[cs]) vaiCantiere(cs); else renderHome(); }
+    else if (S.view === "archivio") vaiCantiere(S.cid);
+    else { renderHome(); window.scrollTo(0, 0); }
+  });
+
+  // ------------------------------------------------------------------ editor
+  function renderTabs() {
+    tabs.hidden = false;
+    var avvisi = [avvisiPresenti().length > 0, false, (S.v.esitoPrecedenti || []).some(function (e) { return !e.esito; }), false, false];
+    tabs.replaceChildren.apply(tabs, PASSI.map(function (t, i) {
+      return h("button", { type: "button", class: "tab", "aria-current": i === S.step ? "step" : null,
+        onclick: function () { S.step = i; S.proposta = null; renderEdit(); window.scrollTo(0, 0); } },
+        [h("span", { class: "n", text: String(i + 1) }), t, avvisi[i] && i !== S.step ? h("span", { class: "dot", "aria-label": "da controllare" }) : null]);
+    }));
+    var cur = tabs.children[S.step]; if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
+  }
+  function renderEdit() {
+    if (!S.v) return renderHome();
+    var c = cantiere();
+    document.getElementById("btnBack").hidden = false; document.getElementById("btnBack").textContent = "‹ Indietro"; document.getElementById("btnPrev").hidden = false; document.getElementById("btnImp").hidden = true;
+    document.getElementById("barEyebrow").textContent = (c.nome || S.v.cantiere) + " · " + S.v.data;
+    document.getElementById("barTitle").textContent = "Verbale n. " + p2(S.v.numero);
+    renderTabs();
+    var out = [];
+    if (locked() && S.step < 4) out.push(h("div", { class: "alert green", text: S.v.stato === "archiviato" ? "Verbale archiviato: si può solo leggere." : "Testo bloccato per le firme. Per modificarlo, vai su Firme e tocca «Riapri per modifiche»." }));
+    out = out.concat([passoPresenti, passoLavori, passoRilievi, passoFoto, passoFirme][S.step]());
+    if (S.step < 4) out.push(h("button", { type: "button", class: "primary full", text: "Avanti: " + PASSI[S.step + 1],
+      onclick: function () { S.step += 1; S.proposta = null; renderEdit(); window.scrollTo(0, 0); } }));
+    // in fondo a ogni passo, finché il verbale è in bozza (richiesta del CSE il 12/11/2026: il tasto era solo nel
+    // passo Firme e, non trovandolo, aveva eliminato l'app intera dal menu di claude.ai)
+    if (S.v.stato === "bozza") out.push(h("section", { class: "block fondo" }, [
+      h("button", { type: "button", class: "warn full", text: S.armato.elimina ? "Tocca di nuovo per eliminare la bozza" : "Elimina questa bozza", onclick: eliminaBozza }),
+      h("div", { class: "muted small", text: "Cancella solo questo verbale in bozza, con le sue foto. L'app e gli altri verbali restano." })]));
+    main.replaceChildren.apply(main, out);
+    main.querySelectorAll("textarea").forEach(autoAltezza);
+  }
+  function autoAltezza(t) { t.style.height = "auto"; t.style.height = Math.max(t.scrollHeight + 4, 64) + "px"; }
+  function area(etichetta, valore, onval, opt) {
+    opt = opt || {};
+    var id = "f-" + (opt.id || etichetta.replace(/\W+/g, "-").toLowerCase());
+    var t = h("textarea", { id: id, class: opt.big ? "big" : "", placeholder: opt.ph || "", disabled: locked(), value: valore || "",
+      oninput: function (e) { onval(e.target.value); autoAltezza(e.target); touch(); } });
+    return h("div", null, [h("label", { class: "lab", for: id, text: etichetta }), t, opt.nota ? h("div", { class: "muted small", text: opt.nota }) : null]);
+  }
+
+  // ---- passo 1: presenti
+  function chiavePersona(p) { return (p.nome || "") + "|" + (p.impresa || ""); }
+  function avvisiPresenti() {
+    return (S.v.presenti || []).filter(function (p) { return (p.inElenco === false && p.impresa !== "Committente / DL") || p.nota; });
+  }
+  function rigaCheck(p, gruppo) {
+    var sel = (S.v.presenti || []).some(function (x) { return chiavePersona(x) === chiavePersona(p); });
+    var id = "p-" + btoa(unescape(encodeURIComponent(chiavePersona(p)))).replace(/[^a-z0-9]/gi, "");
+    return h("label", { class: "check", for: id }, [
+      h("input", { type: "checkbox", id: id, checked: sel, disabled: locked(), onchange: function (e) {
+        var k = chiavePersona(p);
+        S.v.presenti = (S.v.presenti || []).filter(function (x) { return chiavePersona(x) !== k; });
+        if (e.target.checked) S.v.presenti.push(clone(p));
+        touch(); renderTabs(); aggiornaRiepilogoPresenti();
+      } }),
+      h("span", { class: "t" }, [h("b", { text: p.impresa === "Committente / DL" ? p.nome : etichettaAlfa(p) }), p.ruolo ? h("span", { text: p.ruolo }) : null,
+        p.nota ? h("span", { class: "chip", text: p.nota }) : null,
+        p.inElenco === false ? h("span", { class: "chip red", text: "Non nell'elenco del POS" }) : null])
+    ]);
+  }
+  // elenco degli autorizzati in ordine alfabetico per cognome: «Cognome Nome» nella lista, nel verbale resta il nome com'è scritto
+  var TITOLI = /^((ing|geom|arch|dott|dott\.ssa|avv|sig|sig\.ra|per\.\s*ind|p\.\s*i)\.?\s+)+/i;
+  function senzaTitolo(n) { return String(n || "").trim().replace(TITOLI, "").trim(); }
+  var PARTICELLE = /^(de|di|da|del|della|dei|degli|dal|dalla|dalle|lo|la|li|van|von|el|al|de'|d')$/i;
+  function cognomeDi(p) {
+    if (p.cognome) return String(p.cognome).trim();
+    var w = senzaTitolo(p.nome).split(/\s+/);
+    if (w.length > 2 && PARTICELLE.test(w[w.length - 2])) return w.slice(-2).join(" ");
+    return w[w.length - 1] || "";
+  }
+  function etichettaAlfa(p) {
+    var n = senzaTitolo(p.nome), c = cognomeDi(p), i = n.toLowerCase().lastIndexOf(c.toLowerCase());
+    var resto = i >= 0 ? (n.slice(0, i) + " " + n.slice(i + c.length)).replace(/\s+/g, " ").trim() : n;
+    return c + (resto && resto.toLowerCase() !== c.toLowerCase() ? " " + resto : "");
+  }
+  function ordinaAlfa(a, b) { return etichettaAlfa(a).localeCompare(etichettaAlfa(b), "it", { sensitivity: "base" }); }
+  function aggiornaRiepilogoPresenti() {
+    var box = document.getElementById("riepPresenti"); if (!box) return;
+    box.replaceChildren(riepilogoPresenti());
+  }
+  function riepilogoPresenti() {
+    var n = (S.v.presenti || []).length, a = avvisiPresenti();
+    if (!n) return h("div", { class: "muted", text: "Spunta chi è presente in cantiere." });
+    if (!a.length) return h("div", { class: "alert green", text: n + (n === 1 ? " presente, risulta nell'elenco del POS." : " presenti, tutti nell'elenco del POS.") });
+    return h("div", { class: "alert" }, [n + " presenti. Da verificare:", h("ul", null, a.map(function (p) {
+      return h("li", { text: p.nome + " (" + (p.impresa || "") + "): " + (p.inElenco === false ? "non nell'elenco del POS" : p.nota) });
+    }))]);
+  }
+  function passoPresenti() {
+    var c = cantiere(), out = [];
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Visita" }), h("div", { class: "duo" }, [
+      h("div", null, [h("label", { class: "lab", for: "f-data", text: "Data" }), h("input", { type: "date", id: "f-data", disabled: locked(), value: itToIso(S.v.data),
+        onchange: function (e) { var d = isoToIt(e.target.value); if (d) { S.v.data = d; touch(); renderEdit(); } } })]),
+      h("div", null, [h("label", { class: "lab", for: "f-ora", text: "Ora di inizio" }), h("input", { type: "time", id: "f-ora", disabled: locked(), value: S.v.oraInizio || "",
+        onchange: function (e) { S.v.oraInizio = e.target.value; touch(); } })])
+    ])]));
+    out.push(h("div", { id: "riepPresenti" }, [riepilogoPresenti()]));
+    var ENTE = "Committente / DL";
+    var gruppi = [];
+    if ((c.altriPresenti || []).length) gruppi.push({ chiave: ENTE, nome: "Committente e direzione lavori", persone: c.altriPresenti.map(function (p) { return { nome: p.nome, ruolo: p.ruolo, impresa: ENTE, tipo: "altro" }; }) });
+    (c.imprese || []).forEach(function (im) {
+      gruppi.push({ chiave: im.nome, nome: im.nome + (im.tipo ? " · " + im.tipo : ""), impresa: true, persone: (im.persone || []).map(function (p) {
+        var x = { nome: p.nome, ruolo: p.ruolo || "", impresa: im.nome, tipo: p.rappresentante ? "rappresentante" : "operaio", nota: p.nota || "" };
+        if (p.cognome) x.cognome = p.cognome;
+        return x;
+      }).sort(ordinaAlfa) });
+    });
+    var chiaviGruppi = gruppi.map(function (g) { return g.chiave; });
+    var extra = (S.v.presenti || []).filter(function (p) { return p.inElenco === false; });
+    gruppi.forEach(function (g) {
+      var sec = h("section", { class: "block" }, [h("h2", { text: g.nome }),
+        g.impresa ? h("div", { class: "muted small", text: g.persone.length + (g.persone.length === 1 ? " persona autorizzata nel POS" : " persone autorizzate nei POS") + " · per cognome" }) : null]);
+      g.persone.forEach(function (p) { sec.append(rigaCheck(p)); });
+      extra.filter(function (p) { return p.impresa === g.chiave; }).forEach(function (p) { sec.append(rigaExtra(p)); });
+      if (!locked()) sec.append(S.nuovaPersona === g.chiave ? formPersona(g.chiave, false) : bottoneAggiungi(g.chiave, "+ Aggiungi persona non in elenco"));
+      out.push(sec);
+    });
+    var secA = h("section", { class: "block" }, [h("h2", { text: "Altre persone" }), h("div", { class: "muted small", text: "Fornitori, visitatori, imprese non ancora autorizzate." })]);
+    extra.filter(function (p) { return chiaviGruppi.indexOf(p.impresa) < 0; }).forEach(function (p) { secA.append(rigaExtra(p)); });
+    if (!locked()) secA.append(S.nuovaPersona === "__altro" ? formPersona("__altro", true) : bottoneAggiungi("__altro", "+ Aggiungi altra persona"));
+    out.push(secA);
+    return out;
+  }
+  function bottoneAggiungi(chiave, testo) {
+    return h("button", { type: "button", class: "full", text: testo, onclick: function () {
+      S.nuovaPersona = chiave; renderEdit();
+      var n = document.getElementById("np-nome"); if (n) { n.focus(); if (n.scrollIntoView) n.scrollIntoView({ block: "center" }); } } });
+  }
+  function rigaExtra(p) {
+    var dl = p.impresa === "Committente / DL";
+    return h("div", { class: "item extra" }, [
+      h("div", { class: "t" }, [h("b", { text: p.nome }), h("div", { class: "muted small", text: [p.ruolo, dl ? "" : p.impresa].filter(Boolean).join(" · ") }),
+        h("span", { class: dl ? "chip green" : "chip red", text: dl ? "Aggiunto a mano" : "Non nell'elenco del POS" })]),
+      h("button", { type: "button", disabled: locked(), text: "Togli", onclick: function () {
+        S.v.presenti = S.v.presenti.filter(function (x) { return x !== p; }); touch(); renderEdit(); } })]);
+  }
+  function formPersona(chiave, libera) {
+    var dl = chiave === "Committente / DL";
+    var kids = [h("input", { type: "text", id: "np-nome", placeholder: "Nome e cognome", autocomplete: "off" }),
+      h("input", { type: "text", id: "np-ruolo", placeholder: dl ? "Ruolo (per esempio ispettore ASL, collaudatore)" : "Mansione o ruolo" })];
+    if (libera) kids.push(h("input", { type: "text", id: "np-imp", placeholder: "Impresa o ente" }));
+    if (!dl) kids.push(h("select", { id: "np-tipo", "aria-label": "Dove compare nel verbale" }, [
+      h("option", { value: "operaio", text: "Nel verbale tra gli operai presenti" }),
+      h("option", { value: "rappresentante", text: "Nel verbale tra i rappresentanti" })]));
+    kids.push(h("div", { class: "row" }, [
+      h("button", { type: "button", text: "Annulla", onclick: function () { S.nuovaPersona = null; renderEdit(); } }),
+      h("button", { type: "button", class: "primary grow", id: "np-ok", text: "Aggiungi", onclick: function () {
+        var nome = document.getElementById("np-nome").value.trim(); if (!nome) { toast("Scrivi il nome."); return; }
+        var imp = libera ? document.getElementById("np-imp").value.trim() : chiave;
+        if (!imp) { toast("Scrivi l'impresa o l'ente."); return; }
+        var tipo = dl ? "altro" : document.getElementById("np-tipo").value;
+        S.v.presenti.push({ nome: nome, ruolo: document.getElementById("np-ruolo").value.trim(), impresa: imp, tipo: tipo, inElenco: false });
+        S.nuovaPersona = null; touch(); renderEdit(); toast(nome + " aggiunto ai presenti."); } })]));
+    return h("div", { class: "items extra" }, kids);
+  }
+
+  // ---- passo 2: lavorazioni e mezzi
+  function passoLavori() {
+    var c = cantiere(), out = [];
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Lavorazioni" }),
+      area("Lavorazioni in corso", S.v.lavorazioni, function (x) { S.v.lavorazioni = x; }, { id: "lav", ph: "Cosa si sta facendo, dove e con quale impresa. Puoi dettare col microfono della tastiera.", nota: "Al passo Rilievi Claude può riscriverlo in forma di verbale." }),
+      area("Programma dei lavori per i giorni seguenti", S.v.programma, function (x) { S.v.programma = x; }, { id: "prog" })]));
+    var sec = h("section", { class: "block" }, [h("h2", { text: "Mezzi e attrezzature presenti" })]);
+    var selez = S.v.mezzi || [];
+    (c.imprese || []).forEach(function (im) {
+      var lista = im.mezzi || []; if (!lista.length) return;
+      var n = selez.filter(function (m) { return m.impresa === im.nome && m.inElenco !== false; }).length;
+      var det = h("details", { class: "grp", open: n > 0 || (c.imprese || []).length === 1 }, [h("summary", { text: im.nome + (n ? " · " + n + " presenti" : "") })]);
+      lista.forEach(function (m) {
+        var nome = typeof m === "string" ? m : m.nome;
+        var trova = function () { return (S.v.mezzi || []).filter(function (x) { return x.nome === nome && x.impresa === im.nome && x.inElenco !== false; })[0]; };
+        var id = "m-" + btoa(unescape(encodeURIComponent(im.nome + nome))).replace(/[^a-z0-9]/gi, "");
+        var riga = h("div", { class: "mz-foto" });
+        det.append(h("label", { class: "check", for: id }, [h("input", { type: "checkbox", id: id, checked: !!trova(), disabled: locked(), onchange: function (e) {
+          var sel = trova();
+          // un mezzo con la foto non si toglie con un tocco solo: la foto andrebbe persa
+          if (!e.target.checked && sel && sel.foto && !S.armato[id]) {
+            e.target.checked = true; S.armato[id] = true; toast("Ha una foto: togli di nuovo la spunta per toglierlo insieme alla foto.");
+            setTimeout(function () { S.armato[id] = false; }, 4000); return;
+          }
+          S.armato[id] = false;
+          if (sel && sel.foto) cancellaAsset(sel.foto);
+          S.v.mezzi = (S.v.mezzi || []).filter(function (x) { return x !== sel; });
+          if (e.target.checked) S.v.mezzi.push({ nome: nome, impresa: im.nome, inElenco: true });
+          touch(); fotoDelMezzo(riga, trova()); } }), h("span", { class: "t" }, [h("b", { text: nome })])]));
+        det.append(riga); fotoDelMezzo(riga, trova());
+      });
+      sec.append(det);
+    });
+    var inCarico = (S.inCarico || {})[1] || 0;
+    var fuori = selez.filter(function (m) { return m.inElenco === false; });
+    if (fuori.length) sec.append(h("h3", { text: "Mezzi non nell'elenco del POS" }));
+    fuori.forEach(function (m) { sec.append(cardMezzo(m, c)); });
+    if (inCarico > 0) sec.append(h("div", { class: "alert", text: "Sto caricando " + (inCarico === 1 ? "1 foto" : inCarico + " foto") + " dei mezzi: intanto puoi andare avanti." }));
+    if (!locked()) {
+      if (S.assets) sec.append(h("button", { type: "button", class: "primary full", text: "Fotografa un mezzo non in elenco", onclick: function () { scegliFotoMezzo(null); } }),
+        h("div", { class: "muted small", text: "Nel verbale vanno le foto, due per riga, con sotto l'impresa. Se vuoi, aggiungi una parola (escavatore, autocarro…)." }));
+      if (!S.nuovoMezzo) sec.append(h("button", { type: "button", class: S.assets ? "link" : "", text: S.assets ? "oppure scrivilo senza foto" : "+ Aggiungi mezzo non in elenco", onclick: function () { S.nuovoMezzo = true; renderEdit(); } }));
+      else sec.append(h("div", { class: "items" }, [
+        h("input", { type: "text", id: "nm-nome", placeholder: "Mezzo o attrezzatura" }),
+        h("select", { id: "nm-imp" }, opzioniImprese(c, impresaMezzo(c))),
+        h("div", { class: "row" }, [h("button", { type: "button", text: "Annulla", onclick: function () { S.nuovoMezzo = false; renderEdit(); } }),
+          h("button", { type: "button", class: "primary grow", text: "Aggiungi", onclick: function () {
+            var nome = document.getElementById("nm-nome").value.trim(); if (!nome) { toast("Scrivi il mezzo."); return; }
+            S.impMezzo = document.getElementById("nm-imp").value;
+            S.v.mezzi.push({ nome: nome, impresa: S.impMezzo, inElenco: false }); S.nuovoMezzo = false; touch(); renderEdit(); } })])
+      ]));
+    }
+    out.push(sec);
+    return out;
+  }
+  // impresa proposta per un mezzo nuovo: l'ultima scelta, altrimenti l'affidataria
+  function impresaMezzo(c) {
+    if (S.impMezzo) return S.impMezzo;
+    var im = c.imprese || [], a = im.filter(function (i) { return i.tipo === "affidataria"; })[0] || im[0];
+    return a ? a.nome : "Altra impresa";
+  }
+  function opzioniImprese(c, scelta) {
+    var nomi = (c.imprese || []).map(function (i) { return i.nome; }).concat(["Altra impresa"]);
+    if (scelta && nomi.indexOf(scelta) < 0) nomi.unshift(scelta);
+    return nomi.map(function (n) { return h("option", { value: n, text: n, selected: n === scelta }); });
+  }
+  function cancellaAsset(id) { if (S.assets && id) S.assets.delete(id).then(function () {}, function () {}); }
+  // sotto un mezzo spuntato dall'elenco: la sua foto, oppure il tasto per farla
+  function fotoDelMezzo(riga, m) {
+    riga.replaceChildren();
+    if (!m) return;
+    if (m.foto) {
+      riga.append(h("img", { src: srcFoto(m.foto), alt: "Foto: " + m.nome, loading: "lazy" }));
+      if (!locked()) riga.append(h("button", { type: "button", text: "Rifai la foto", onclick: function () { scegliFotoMezzo(m); } }));
+    } else if (!locked() && S.assets) riga.append(h("button", { type: "button", text: "Aggiungi la foto", onclick: function () { scegliFotoMezzo(m); } }));
+  }
+  // mezzo non nell'elenco del POS: foto, impresa e una parola facoltativa (o il testo scritto, se aggiunto senza foto)
+  function cardMezzo(m, c) {
+    var k = "mz" + (m.foto || m.nome);
+    var togli = locked() ? null : h("button", { type: "button", class: S.armato[k] ? "warn" : "", text: S.armato[k] ? "Tocca di nuovo per togliere" : "Togli", onclick: function () {
+      if (!S.armato[k]) { S.armato[k] = true; renderEdit(); setTimeout(function () { S.armato[k] = false; }, 4000); return; }
+      S.armato = {}; S.v.mezzi = S.v.mezzi.filter(function (x) { return x !== m; }); cancellaAsset(m.foto); touch(); renderEdit(); } });
+    if (!m.foto) return h("div", { class: "item" }, [h("div", { class: "t" }, [h("b", { text: m.nome }), " ", h("span", { class: "muted", text: m.impresa }), h("div", null, [h("span", { class: "chip red", text: "Non nell'elenco del POS" })])]), togli]);
+    return h("div", { class: "mezzo" }, [
+      h("img", { src: srcFoto(m.foto), alt: m.nome || "Mezzo fotografato", loading: "lazy" }),
+      h("div", { class: "campi" }, [
+        h("select", { "aria-label": "Impresa del mezzo", disabled: locked(), onchange: function (e) { m.impresa = e.target.value; S.impMezzo = m.impresa; touch(); } }, opzioniImprese(c, m.impresa)),
+        h("input", { type: "text", "aria-label": "Che mezzo è", placeholder: "Che mezzo è (facoltativo)", disabled: locked(), value: m.nome || "", oninput: function (e) { m.nome = e.target.value; touch(); } }),
+        togli])
+    ]);
+  }
+
+  // ---- passo 3: rilievi
+  function listaEditabile(titolo, chiave, ph, extra) {
+    var sec = h("section", { class: "block" }, [h("h2", { text: titolo })]);
+    var lista = S.v[chiave] || (S.v[chiave] = []);
+    var items = h("div", { class: "items" });
+    lista.forEach(function (t, i) {
+      var ta = h("textarea", { "aria-label": titolo + " " + (i + 1), disabled: locked(), value: t, oninput: function (e) { S.v[chiave][i] = e.target.value; autoAltezza(e.target); touch(); } });
+      items.append(h("div", { class: "item" }, [ta, h("button", { type: "button", disabled: locked(), text: "Togli", onclick: function () { S.v[chiave].splice(i, 1); touch(); renderEdit(); } })]));
+    });
+    if (!lista.length) items.append(h("div", { class: "muted", text: "Nessuna voce." }));
+    sec.append(items);
+    if (!locked()) sec.append(h("div", { class: "row" }, [h("button", { type: "button", text: "+ Aggiungi", onclick: function () {
+      S.v[chiave].push(""); touch(); renderEdit();
+      var tt = main.querySelectorAll("section textarea[aria-label^='" + titolo + "']"); if (tt.length) tt[tt.length - 1].focus(); } })].concat(extra || [])));
+    return sec;
+  }
+  function passoRilievi() {
+    var out = [], ep = S.v.esitoPrecedenti || [];
+    if (ep.length) {
+      var sec = h("section", { class: "block" }, [h("h2", { text: "Prescrizioni ancora aperte" }), h("div", { class: "muted small", text: "Per ognuna: è stata risolta?" })]);
+      ep.forEach(function (e) {
+        var b = function (val, cls, txt) { return h("button", { type: "button", class: cls, "aria-pressed": e.esito === val ? "true" : "false", disabled: locked(), text: txt,
+          onclick: function () { e.esito = e.esito === val ? "" : val; touch(); renderEdit(); } }); };
+        sec.append(h("div", { class: "prec" }, [h("div", null, [h("span", { class: "muted small", text: "Verbale n. " + e.rif + " · " }), e.testo]),
+          h("div", { class: "seg" }, [b("risolta", "si", "Risolta"), b("aperta", "no", "Ancora aperta")])]));
+      });
+      out.push(sec);
+    }
+    var bloccoClaude = h("section", { class: "block" }, [h("h2", { text: "Appunti" }),
+      area("Cosa hai visto e cosa prescrivi", S.v.appunti, function (x) { S.v.appunti = x; }, { id: "app", big: true, ph: "Anche a frasi spezzate, col microfono della tastiera. Esempio: cavo a terra dalla baracca al canale dove passano i mezzi, da interrare. Fronte scavo lato nord senza rete." })]);
+    if (!locked()) {
+      if (S.sample) {
+        var stato = h("div", { class: "muted small", id: "claudeStato", role: "status" });
+        bloccoClaude.append(h("div", { class: "row" }, [
+          h("button", { type: "button", class: "primary grow", id: "btnClaude", text: "Scrivi il verbale con Claude", onclick: scriviConClaude }),
+          h("button", { type: "button", id: "btnStop", hidden: true, text: "Ferma", onclick: function () { if (S.ctl) S.ctl.abort(); } })]), stato);
+      } else bloccoClaude.append(h("div", { class: "muted small", text: "La scrittura con Claude non è disponibile in questa vista: compila le voci qui sotto a mano." }));
+    }
+    if (S.proposta) bloccoClaude.append(rendiProposta());
+    out.push(bloccoClaude);
+    // le due caselle del verbale le spunta solo il CSE (17/11/2026: in un verbale la casella
+    // «Sono state rilevate le seguenti inosservanze» si era spuntata da sola perché Claude aveva scritto le inosservanze)
+    out.push(h("section", { class: "block" }, [
+      h("label", { class: "check", for: "f-nessuna" }, [
+        h("input", { type: "checkbox", id: "f-nessuna", checked: !!S.v.nessunaInosservanza, disabled: locked(), onchange: function (e) {
+          S.v.nessunaInosservanza = e.target.checked; if (e.target.checked) S.v.conInosservanze = false; touch(); renderEdit(); } }),
+        h("span", { class: "t" }, [h("b", { text: "Nessuna inosservanza e nessuna situazione di pericolo grave e imminente" })])]),
+      h("label", { class: "check", for: "f-coninos" }, [
+        h("input", { type: "checkbox", id: "f-coninos", checked: conIno(S.v), disabled: locked(), onchange: function (e) {
+          S.v.conInosservanze = e.target.checked; if (e.target.checked) S.v.nessunaInosservanza = false; touch(); renderEdit(); } }),
+        h("span", { class: "t" }, [h("b", { text: "Sono state rilevate inosservanze" }), h("span", { text: "Le inosservanze e le disposizioni vanno nel verbale solo se la spunti tu." })])])]));
+    var libreria = [h("button", { type: "button", text: "Dalla libreria", onclick: apriLibreria })];
+    if (S.v.nessunaInosservanza) {
+      if (conRilievi(S.v)) out.push(listaEditabile("Rilievi o prescrizioni per i lavori in corso", "disposizioni", "", libreria));
+    } else {
+      if (conIno(S.v)) out.push(listaEditabile("Inosservanze rilevate", "inosservanze"));
+      else out.push(h("div", { class: "alert", text: "Spunta una delle due caselle: «Nessuna inosservanza» (le richieste vanno in «Rilievi o prescrizioni per i lavori in corso») oppure «Sono state rilevate inosservanze»." }));
+      out.push(listaEditabile("Si dispone quanto segue", "disposizioni", "", libreria));
+    }
+    var per = S.v.pericolo || (S.v.pericolo = { presente: false, motivo: "" });
+    var secP = h("section", { class: "block" + (per.presente ? " " : "") }, [h("label", { class: "check", for: "f-per" }, [
+      h("input", { type: "checkbox", id: "f-per", checked: !!per.presente, disabled: locked(), onchange: function (e) { per.presente = e.target.checked; if (per.presente) S.v.nessunaInosservanza = false; touch(); renderEdit(); } }),
+      h("span", { class: "t" }, [h("b", { text: "Pericolo grave e imminente: sospensione delle lavorazioni" }), h("span", { text: "art. 92, comma 1, lettera f, D.Lgs. 81/2008" })])])]);
+    if (per.presente) {
+      secP.append(h("div", { class: "alert red", text: "Il verbale riporterà la sospensione delle lavorazioni interessate fino alla verifica degli adeguamenti." }));
+      secP.append(area("In quanto", per.motivo, function (x) { per.motivo = x; }, { id: "per" }));
+    }
+    out.push(secP);
+    out.push(h("section", { class: "block" }, [
+      area("Prescrizioni per le lavorazioni in programma", S.v.prescrizioniLavorazioni, function (x) { S.v.prescrizioniLavorazioni = x; }, { id: "plav" }),
+      area("Note", S.v.note, function (x) { S.v.note = x; }, { id: "note", ph: "Fatti utili che non sono inosservanze: furti, visite, comunicazioni." })]));
+    return out;
+  }
+
+  function scriviConClaude() {
+    if (!S.sample) return;
+    var c = cantiere(), btn = document.getElementById("btnClaude"), stop = document.getElementById("btnStop"), st = document.getElementById("claudeStato");
+    var testoAppunti = (S.v.appunti || "").trim();
+    if (!testoAppunti && !(S.v.lavorazioni || "").trim()) { toast("Scrivi prima qualche appunto."); return; }
+    var lib = (S.libreria && S.libreria.categorie || []).map(function (k) { return k.nome + ":\n" + k.voci.map(function (v) { return "- " + v; }).join("\n"); }).join("\n\n");
+    var dati = {
+      cantiere: c.nome, lavori: c.lavori, impresaAffidataria: (c.imprese || [])[0] ? c.imprese[0].nome : "",
+      imprese: (c.imprese || []).map(function (i) { return i.nome; }), numeroVerbale: p2(S.v.numero), data: S.v.data,
+      presenti: (S.v.presenti || []).map(function (p) { return p.nome + " (" + p.impresa + ")"; }),
+      mezzi: (S.v.mezzi || []).map(function (m) { return (m.nome || "mezzo fotografato") + " (" + m.impresa + ")"; }),
+      prescrizioniPrecedenti: (S.v.esitoPrecedenti || []).map(function (e) { return { rif: "verbale n. " + e.rif, testo: e.testo, esito: e.esito || "non indicato" }; }),
+      lavorazioniDettate: S.v.lavorazioni || "", programmaDettato: S.v.programma || "",
+      inosservanzeSpuntate: conIno(S.v), nessunaInosservanzaSpuntata: !!S.v.nessunaInosservanza,
+      inosservanzeGiaScritte: conIno(S.v) ? (S.v.inosservanze || []) : [], disposizioniGiaScritte: S.v.disposizioni || []
+    };
+    var prompt = [
+      "Sei l'assistente di " + nomeCse() + ", " + prof().qualifica + " (art. 92 D.Lgs. 81/2008). Dagli appunti dettati in cantiere scrivi le parti del verbale di visita in cantiere.",
+      "",
+      "Regole:",
+      "- Italiano tecnico, sobrio, frasi brevi. Tono collaborativo: si riporta senza dare voti; le prescrizioni restano chiare e puntuali, senza toni di rimprovero.",
+      "- Usa solo i fatti presenti negli appunti e nei dati. Non inventare nomi, quantità, luoghi, date o riferimenti normativi; se un dato manca, non aggiungerlo.",
+      "- \"inosservanze\": solo se nei dati \"inosservanzeSpuntate\" è true (il Coordinatore ha spuntato lui «Sono state rilevate inosservanze»). Se è false restituisci sempre una lista vuota, anche quando gli appunti contengono richieste: le richieste vanno solo in \"disposizioni\" e non vanno trasformate in inosservanze. Quando è true: una constatazione oggettiva per voce (per esempio \"il fronte scavo lato nord non è delimitato\"), con l'iniziale minuscola e senza punto finale.",
+      "- \"disposizioni\": una richiesta per voce, nella forma \"Si richiede all'impresa di ...\" oppure \"Si prescrive di ...\", di norma una per ogni inosservanza. Se una voce della libreria corrisponde, riprendine la formulazione adattandola al caso.",
+      "- Se un'inosservanza ripete una prescrizione precedente con esito \"aperta\", chiudi la disposizione con \"(già richiesto nel verbale n. NN)\" usando il numero indicato.",
+      "- Se nei dati \"nessunaInosservanzaSpuntata\" è true, le richieste vanno comunque in \"disposizioni\": nel verbale compaiono come «Rilievi o prescrizioni per i lavori in corso».",
+      "- Se negli appunti non ci sono né inosservanze né richieste, restituisci liste vuote.",
+      "- \"note\": fatti utili che non sono inosservanze (furti, visite, comunicazioni); stringa vuota se non ce ne sono.",
+      "- \"lavorazioni\" e \"programma\": riscrivi in forma di verbale il testo dettato corrispondente, senza aggiungere nulla; stringa vuota se il testo dettato è vuoto.",
+      "- \"avvisi\": brevi segnalazioni per il Coordinatore, che non vanno nel verbale: una situazione che negli appunti sembra di pericolo grave e imminente, una prescrizione precedente con esito \"non indicato\", un'incongruenza. Lista vuota se non ce ne sono.",
+      "",
+      "Rispondi solo con un oggetto JSON con queste chiavi: {\"lavorazioni\": \"...\", \"programma\": \"...\", \"inosservanze\": [\"...\"], \"disposizioni\": [\"...\"], \"note\": \"...\", \"avvisi\": [\"...\"]}",
+      "",
+      "Dati del verbale:", JSON.stringify(dati, null, 1),
+      "",
+      "Libreria delle prescrizioni tipo del Coordinatore:", lib || "(non disponibile)",
+      "",
+      "Appunti dettati in cantiere:", testoAppunti || "(nessuno)"
+    ].join("\n");
+    S.ctl = new AbortController();
+    btn.disabled = true; stop.hidden = false; st.textContent = "Claude sta scrivendo…";
+    S.sample.json(prompt, { signal: S.ctl.signal, modelTier: "default" }).then(function (r) {
+      var arr = function (x) { return Array.isArray(x) ? x.map(function (s) { return String(s).trim(); }).filter(Boolean) : []; };
+      var str = function (x) { return typeof x === "string" ? x.trim() : ""; };
+      S.proposta = { lavorazioni: str(r && r.lavorazioni), programma: str(r && r.programma), inosservanze: arr(r && r.inosservanze),
+        disposizioni: arr(r && r.disposizioni), note: str(r && r.note), avvisi: arr(r && r.avvisi) };
+      renderEdit();
+      var pp = document.getElementById("proposta"); if (pp) pp.scrollIntoView({ block: "start" });
+    }, function (e) {
+      var code = e && e.code;
+      btn.disabled = false; stop.hidden = true;
+      st.textContent = code === "cancelled" ? "" : code === "no_key" ? "Manca la chiave di Claude: mettila nelle Impostazioni, oppure compila a mano." :
+        code === "bad_key" ? "La chiave di Claude non è valida: controllala nelle Impostazioni." : code === "credito" ? "Il credito di Claude è esaurito: ricaricalo su console.anthropic.com." :
+        code === "rete" ? "Claude non è raggiungibile: serve la rete. Intanto compila a mano." :
+        code === "rate_limited" ? "Troppe richieste: riprova tra qualche minuto." : code === "invalid_json" ? "Risposta non leggibile: tocca di nuovo il pulsante." :
+        code === "refused" ? "Claude non ha scritto il testo: riformula gli appunti." : "Claude non risponde: controlla la rete e riprova.";
+    });
+  }
+  function rendiProposta() {
+    var P = S.proposta, box = h("div", { class: "proposta", id: "proposta" }, [h("h3", { text: "Proposta di Claude" })]);
+    if (P.avvisi.length) box.append(h("div", { class: "alert" }, ["Per te (non va nel verbale):", h("ul", null, P.avvisi.map(function (a) { return h("li", { text: a }); }))]));
+    var sez = function (t, el) { box.append(h("div", { class: "muted small", text: t }), el); };
+    if (P.lavorazioni) sez("Lavorazioni in corso", h("div", { text: P.lavorazioni }));
+    if (P.programma) sez("Programma", h("div", { text: P.programma }));
+    // senza la sua spunta le inosservanze non entrano nel verbale, nemmeno se Claude le ha scritte
+    if (conIno(S.v)) sez("Inosservanze", P.inosservanze.length ? h("ul", null, P.inosservanze.map(function (x) { return h("li", { text: x }); })) : h("div", { text: "Nessuna" }));
+    sez(conRilievi(S.v) ? "Rilievi o prescrizioni" : "Si dispone", P.disposizioni.length ? h("ol", null, P.disposizioni.map(function (x) { return h("li", { text: x }); })) : h("div", { text: "Nessuna" }));
+    if (P.note) sez("Note", h("div", { text: P.note }));
+    box.append(h("div", { class: "row" }, [
+      h("button", { type: "button", text: "Scarta", onclick: function () { S.proposta = null; renderEdit(); } }),
+      h("button", { type: "button", class: "primary grow", text: "Usa questo testo", onclick: function () {
+        if (P.lavorazioni) S.v.lavorazioni = P.lavorazioni;
+        if (P.programma) S.v.programma = P.programma;
+        // le caselle «nessuna inosservanza» e «sono state rilevate inosservanze» restano come le ha messe lui
+        if (conIno(S.v)) S.v.inosservanze = P.inosservanze;
+        S.v.disposizioni = P.disposizioni;
+        if (P.note) S.v.note = P.note;
+        S.proposta = null; touch(); renderEdit(); toast("Testo inserito: puoi correggerlo nelle voci qui sotto."); } })]));
+    return box;
+  }
+  function apriLibreria() {
+    var body = document.getElementById("libBody");
+    var cats = (S.libreria && S.libreria.categorie) || [];
+    if (!cats.length) { toast("Libreria non disponibile."); return; }
+    body.replaceChildren.apply(body, cats.map(function (k) {
+      return h("section", { class: "block" }, [h("h2", { text: k.nome })].concat(k.voci.map(function (v) {
+        return h("button", { type: "button", class: "voce", text: v, onclick: function () {
+          S.v.disposizioni = S.v.disposizioni || []; S.v.disposizioni.push(v); touch(); toast(conRilievi(S.v) ? "Aggiunta ai rilievi e prescrizioni." : "Aggiunta alle disposizioni."); } });
+      })));
+    }));
+    document.getElementById("lib").hidden = false; document.documentElement.style.overflow = "hidden";
+  }
+  document.getElementById("btnLibChiudi").addEventListener("click", function () {
+    document.getElementById("lib").hidden = true; document.documentElement.style.overflow = ""; renderEdit(); });
+
+  // ---- passo 4: foto
+  // Richiesta del CSE il 13/11/2026: caricamento più veloce. Le foto nel verbale sono larghe 6,7 cm: 900 pixel
+  // bastano (oltre 300 dpi). Si riducono una alla volta (memoria del telefono) ma si caricano fino a 3 insieme;
+  // la foto ridotta resta in memoria per l'anteprima e per il PDF, senza riscaricarla dal server.
+  var FOTO_LATO = 900, FOTO_QUALITA = 0.62, FOTO_IN_PARALLELO = 3;
+  var fotoLocali = {};   // id asset -> { blob, url } delle foto caricate da questo telefono in questa sessione
+  function riduciFoto(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, hh = img.naturalHeight, s = Math.min(1, FOTO_LATO / Math.max(w, hh));
+        var cv = document.createElement("canvas"); cv.width = Math.round(w * s); cv.height = Math.round(hh * s);
+        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+        cv.toBlob(function (b) { cv.width = 1; cv.height = 1; b ? res(b) : rej(new Error("conversione")); }, "image/jpeg", FOTO_QUALITA);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error("immagine")); };
+      img.src = url;
+    });
+  }
+  function srcFoto(id) { return fotoLocali[id] ? fotoLocali[id].url : "_blob/" + id; }
+  // carica le foto scelte nel passo indicato (1 mezzi, 3 documentazione); aggiungi(id) le mette nel verbale, in ordine
+  function caricaFoto(files, passo, aggiungi) {
+    if (!files.length || !S.assets) return;
+    var vid = S.vid, fatte = 0, tot = files.length, inVolo = [], riduzione = Promise.resolve(), ordine = Promise.resolve();
+    S.inCarico = S.inCarico || {}; S.inCarico[passo] = (S.inCarico[passo] || 0) + tot;
+    var stato = function () {
+      salvaStato(fatte < tot ? "Foto " + fatte + " di " + tot + " caricate" : "Foto caricate");
+      if (!(S.view === "edit" && S.step === passo && S.vid === vid)) return;
+      var a = document.activeElement;   // non si ridisegna sotto le dita mentre scrive una didascalia
+      if (a && main.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) S.rerenderOnBlur = true; else renderEdit();
+    };
+    stato();
+    files.forEach(function (f) {
+      // riduzione in fila (una foto grande alla volta in memoria); il caricamento parte appena la foto è pronta,
+      // con al massimo FOTO_IN_PARALLELO caricamenti aperti
+      var pronta = riduzione.then(function attendi() {
+        if (inVolo.length < FOTO_IN_PARALLELO) return riduciFoto(f);
+        return Promise.race(inVolo).then(attendi);
+      });
+      riduzione = pronta.then(function () {}, function () {});
+      var caricata = pronta.then(function (b) {
+        var su = S.assets.upload(b, { type: "image/jpeg" }).then(function (r) { return { r: r, b: b }; });
+        var finito = su.then(function () {}, function () {});
+        inVolo.push(finito); finito.then(function () { var i = inVolo.indexOf(finito); if (i >= 0) inVolo.splice(i, 1); });
+        return su;
+      });
+      // nel verbale le foto entrano nell'ordine in cui sono state scelte
+      ordine = ordine.then(function () { return caricata; }).then(function (x) {
+        fotoLocali[x.r.id] = { blob: x.b, url: URL.createObjectURL(x.b) };
+        if (S.vid === vid && S.v) { aggiungi(x.r.id); touch(); }
+      }, function (e) {
+        toast(e && e.code === "too_large" ? "Una foto è troppo grande." : e && e.code === "quota_or_state" ? "Spazio per le foto esaurito: avvisa Claude." : "Una foto non si è caricata: riprova.");
+      }).then(function () { fatte += 1; S.inCarico[passo] -= 1; stato(); });
+    });
+    ordine.then(function () { if (S.vid === vid) { touch(); flush(); } });
+  }
+  var fileFoto = document.getElementById("fileFoto");
+  fileFoto.addEventListener("change", function () {
+    var files = Array.prototype.slice.call(fileFoto.files || []); fileFoto.value = "";
+    caricaFoto(files, 3, function (id) { S.v.foto = S.v.foto || []; S.v.foto.push({ id: id, didascalia: "" }); });
+  });
+  // foto dei mezzi: per un mezzo spuntato dall'elenco (una foto, sostituisce la precedente) o per mezzi nuovi (una per foto)
+  var fileMezzo = document.getElementById("fileMezzo"), mezzoPer = null;
+  function scegliFotoMezzo(m) { mezzoPer = m ? { nome: m.nome, impresa: m.impresa } : null; fileMezzo.multiple = !m; fileMezzo.click(); }
+  fileMezzo.addEventListener("change", function () {
+    var files = Array.prototype.slice.call(fileMezzo.files || []), per = mezzoPer; fileMezzo.value = ""; mezzoPer = null;
+    if (per) files = files.slice(0, 1);
+    var imp = impresaMezzo(cantiere());
+    caricaFoto(files, 1, function (id) {
+      S.v.mezzi = S.v.mezzi || [];
+      if (!per) { S.v.mezzi.push({ nome: "", impresa: imp, inElenco: false, foto: id }); return; }
+      var m = S.v.mezzi.filter(function (x) { return x.nome === per.nome && x.impresa === per.impresa && x.inElenco !== false; })[0];
+      if (!m) { m = { nome: per.nome, impresa: per.impresa, inElenco: true }; S.v.mezzi.push(m); }
+      if (m.foto && m.foto !== id) cancellaAsset(m.foto);
+      m.foto = id;
+    });
+  });
+  function passoFoto() {
+    var sec = h("section", { class: "block" }, [h("h2", { text: "Documentazione fotografica" })]);
+    if (!locked()) {
+      if (S.assets) sec.append(h("button", { type: "button", class: "primary full", text: "Scatta o scegli foto", onclick: function () { fileFoto.click(); } }));
+      else sec.append(h("div", { class: "muted", text: "Le foto si possono aggiungere solo aprendo la pagina col tuo account." }));
+    }
+    var foto = S.v.foto || [], inCarico = (S.inCarico || {})[3] || 0;
+    if (inCarico > 0) sec.append(h("div", { class: "alert", text: "Sto caricando " + (inCarico === 1 ? "1 foto" : inCarico + " foto") + ": intanto puoi scrivere le didascalie o andare avanti." }));
+    if (!foto.length && !(inCarico > 0)) sec.append(h("div", { class: "muted", text: "Nessuna foto. Nel verbale vanno quelle che documentano le inosservanze e le lavorazioni." }));
+    var grid = h("div", { class: "foto" });
+    foto.forEach(function (f, i) {
+      grid.append(h("figure", null, [h("img", { src: srcFoto(f.id), alt: f.didascalia || ("Foto " + (i + 1)), loading: "lazy" }),
+        h("textarea", { "aria-label": "Didascalia foto " + (i + 1), placeholder: "Foto " + (i + 1) + ": didascalia", disabled: locked(), value: f.didascalia || "",
+          oninput: function (e) { f.didascalia = e.target.value; touch(); } }),
+        locked() ? null : h("button", { type: "button", text: S.armato["foto" + i] ? "Tocca di nuovo per togliere" : "Togli", class: S.armato["foto" + i] ? "warn" : "", onclick: function () {
+          if (!S.armato["foto" + i]) { S.armato["foto" + i] = true; renderEdit(); setTimeout(function () { S.armato["foto" + i] = false; }, 4000); return; }
+          S.armato = {}; S.v.foto.splice(i, 1); touch(); renderEdit();
+          if (S.assets) S.assets.delete(f.id).then(function () {}, function () {}); } })]));
+    });
+    sec.append(grid);
+    return [sec];
+  }
+
+  // ---- passo 5: firme
+  function lettura() {
+    var c = cantiere(), v = S.v, box = h("div", { class: "lettura" });
+    box.append(h("dl", null, [h("dt", { text: "Lavori" }), h("dd", { text: c.lavori || "" }), h("dt", { text: "Committente" }), h("dd", { text: c.committente || "" }),
+      h("dt", { text: "Cantiere" }), h("dd", { text: c.indirizzo || "" }), h("dt", { text: "Visita" }), h("dd", { text: v.data + ", ore " + (v.oraInizio || "") + " – CSE " + nomeCse() })]));
+    var lst = function (t, arr, ord) { if (!arr || !arr.length) return; box.append(h("h3", { text: t }), h(ord ? "ol" : "ul", null, arr.map(function (x) { return h("li", { text: x }); }))); };
+    lst("Presenti", (v.presenti || []).map(function (p) { return p.impresa === "Committente / DL" ? p.nome + (p.ruolo ? " – " + p.ruolo : "") : p.nome + " – " + p.impresa + (p.ruolo ? ", " + p.ruolo : ""); }));
+    lst("Mezzi e attrezzature", (v.mezzi || []).map(function (m) { return (m.nome || "Mezzo fotografato") + " – " + m.impresa + (m.foto ? " (con foto)" : ""); }));
+    if (v.lavorazioni) { box.append(h("h3", { text: "Lavorazioni in corso" }), h("div", { text: v.lavorazioni })); }
+    lst("Prescrizioni precedenti", (v.esitoPrecedenti || []).map(function (e) { return "n. " + e.rif + " – " + e.testo + ": " + (e.esito === "risolta" ? "risolta" : e.esito === "aperta" ? "ancora aperta" : "esito non indicato"); }));
+    if (v.nessunaInosservanza) {
+      box.append(h("h3", { text: "Esito" }), h("div", { text: "Non sono state rilevate inosservanze, né esistono situazioni di pericolo grave e imminente." }));
+      if (conRilievi(v)) lst("Rilievi o prescrizioni per i lavori in corso", (v.disposizioni || []).filter(function (x) { return (x || "").trim(); }), true);
+    }
+    else { if (conIno(v)) lst("Inosservanze rilevate", v.inosservanze); lst("Si dispone quanto segue", v.disposizioni, true); }
+    if (v.pericolo && v.pericolo.presente) box.append(h("h3", { text: "Pericolo grave e imminente" }), h("div", { class: "alert red", text: "Si sospendono le lavorazioni interessate fino alla verifica degli avvenuti adeguamenti, in quanto: " + (v.pericolo.motivo || "") }));
+    if (v.programma) box.append(h("h3", { text: "Programma dei lavori" }), h("div", { text: v.programma }));
+    if (v.prescrizioniLavorazioni) box.append(h("h3", { text: "Prescrizioni per le lavorazioni" }), h("div", { text: v.prescrizioniLavorazioni }));
+    if (v.note) box.append(h("h3", { text: "Note" }), h("div", { text: v.note }));
+    if ((v.foto || []).length) box.append(h("h3", { text: "Foto" }), h("div", { text: v.foto.length + (v.foto.length === 1 ? " foto allegata" : " foto allegate") }));
+    box.append(h("div", { class: "muted small", text: avvertenza() }));
+    return box;
+  }
+  function mancanze() {
+    var v = S.v, m = [];
+    if (!(v.presenti || []).length) m.push("nessun presente indicato");
+    if (!(v.lavorazioni || "").trim()) m.push("lavorazioni in corso vuote");
+    if ((v.esitoPrecedenti || []).some(function (e) { return !e.esito; })) m.push("esito di una prescrizione precedente non indicato");
+    var ino = conIno(v) ? (v.inosservanze || []).filter(function (x) { return (x || "").trim(); }) : [], dis = (v.disposizioni || []).filter(function (x) { return (x || "").trim(); });
+    if (!v.nessunaInosservanza && !conIno(v)) m.push("non hai spuntato né «nessuna inosservanza» né «sono state rilevate inosservanze»");
+    if (conIno(v) && !ino.length) m.push("hai spuntato «sono state rilevate inosservanze» ma non ne hai scritte");
+    if (ino.length && !dis.length) m.push("inosservanze senza disposizioni");
+    if (avvisiPresenti().length) m.push(avvisiPresenti().length + " presenti da verificare (passo 1)");
+    return m;
+  }
+  function passoFirme() {
+    var v = S.v, out = [];
+    out.push(h("section", { class: "block" }, [h("h2", { text: "Verbale" }), lettura()]));
+    var firmatari = v.firmatari || [];
+    if (v.stato === "bozza") {
+      var m = mancanze();
+      if (m.length) out.push(h("div", { class: "alert" }, ["Prima delle firme controlla:", h("ul", null, m.map(function (x) { return h("li", { text: x }); }))]));
+      var sec = h("section", { class: "block" }, [h("h2", { text: "Chi firma" })]);
+      firmatari.forEach(function (f) {
+        sec.append(h("div", { class: "item" }, [h("div", { class: "chi" }, [h("span", { class: "ruolo", text: f.ruolo }), h("span", { class: "nome", text: f.nome })]),
+          f.chiave === "cse" ? h("span") : h("button", { type: "button", text: "Togli", onclick: function () { v.firmatari = v.firmatari.filter(function (x) { return x !== f; }); touch(); renderEdit(); } })]));
+      });
+      var cand = (v.presenti || []).filter(function (p) { return p.impresa !== "Committente / DL" && !firmatari.some(function (f) { return f.nome.indexOf(p.nome) === 0; }); });
+      if (cand.length) sec.append(h("div", { class: "row" }, [h("select", { id: "nf", class: "grow", "aria-label": "Aggiungi firmatario" }, cand.map(function (p, i) { return h("option", { value: String(i), text: p.nome + " – " + p.impresa }); })),
+        h("button", { type: "button", text: "Aggiungi", onclick: function () {
+          var p = cand[Number(document.getElementById("nf").value)]; if (!p) return;
+          v.firmatari.splice(v.firmatari.length - 1, 0, { chiave: "f" + Date.now().toString(36), ruolo: "Per l'impresa " + p.impresa, nome: p.nome + " – " + p.impresa });
+          touch(); renderEdit(); } })]));
+      out.push(sec);
+      out.push(h("button", { type: "button", class: "primary full", text: "Blocca il testo e passa alle firme", onclick: function () {
+        v.stato = "firma"; touch(); flush(); renderEdit(); window.scrollTo(0, document.body.scrollHeight); } }));
+      return out;
+    }
+    var box = h("section", { class: "block" }, [h("h2", { text: "Firme" })]);
+    var fatte = 0;
+    firmatari.forEach(function (f) {
+      var fr = S.firme[f.chiave]; if (fr) fatte += 1;
+      var card = h("div", { class: "firma" + (fr ? " ok" : "") }, [h("div", { class: "chi" }, [h("span", { class: "ruolo", text: f.ruolo }), h("span", { class: "nome", text: f.nome })])]);
+      if (fr) {
+        card.append(h("img", { src: fr.png, alt: "Firma di " + f.nome }), h("div", { class: "stamp", text: "Firmato il " + dataOra(fr.firmatoIl) }));
+        if (v.stato === "firma") card.append(h("div", { class: "row" }, [h("button", { type: "button", class: S.armato[f.chiave] ? "warn" : "", text: S.armato[f.chiave] ? "Tocca di nuovo per togliere la firma" : "Rifai la firma", onclick: function () {
+          if (!S.armato[f.chiave]) { S.armato[f.chiave] = true; renderEdit(); setTimeout(function () { S.armato[f.chiave] = false; }, 4000); return; }
+          S.armato = {}; S.db.doc("firme/" + S.vid + "__" + f.chiave).delete().then(function () {}, function () { toast("La firma non si è potuta togliere."); }); } })]));
+      } else if (v.stato === "firma") card.append(h("button", { type: "button", class: "primary full", text: "Firma", onclick: function () { apriPad(f); } }));
+      box.append(card);
+    });
+    out.push(box);
+    if (v.stato === "firma") {
+      if (fatte === firmatari.length && firmatari.length) out.push(h("button", { type: "button", class: "ok full", text: "Chiudi il verbale", onclick: function () {
+        var ult = Object.keys(S.firme).map(function (k) { return S.firme[k].firmatoIl; }).sort().pop();
+        v.oraFine = ult ? oraDi(ult) : adesso(); v.stato = "firmato"; touch(); flush(); renderEdit();
+        preparaPdf().then(null, function () {}); } }));
+      else out.push(h("div", { class: "muted", text: "Firme raccolte: " + fatte + " su " + firmatari.length + "." }));
+      out.push(h("button", { type: "button", class: "full " + (S.armato.riapri ? "warn" : ""), text: S.armato.riapri ? "Tocca di nuovo: le firme raccolte vengono tolte" : "Riapri per modifiche", onclick: riapri }));
+    } else if (v.stato === "firmato") {
+      out.push(h("div", { class: "alert green", text: "Verbale chiuso alle " + (v.oraFine || "") + "." }));
+      out.push(bloccoPdf());
+      out.push(h("div", { class: "muted small", text: "Per copiarlo in commessa e preparare la mail ai destinatari del cantiere scrivi a Claude «archivia il verbale n. " + p2(v.numero) + " di " + (cantiere().nome || v.cantiere) + "»." }));
+    } else if (v.stato === "archiviato") {
+      out.push(h("div", { class: "alert green", text: "Verbale archiviato in commessa." }));
+      if (v.pdf) out.push(bloccoPdf());
+    }
+    return out;
+  }
+  function bloccoPdf() {
+    // il PDF si prepara da solo alla chiusura del verbale; «Invia» funziona anche mentre si sta preparando
+    var v = S.v, sec = h("section", { class: "block", id: "bloccoPdf" }, [h("h2", { text: "PDF del verbale" })]);
+    var mio = S.pdf && S.pdf.vid === S.vid ? S.pdf : null, info = mio || v.pdf;
+    if (!mio && v.pdf && !S.pdfScarico) { S.pdfScarico = true; pdfDaArchivio().then(function () { S.pdfScarico = false; }, function () { S.pdfScarico = false; }); }
+    if (S.pdfBusy) sec.append(h("div", { class: "muted", id: "pdfBusy", text: S.pdfBusy }));
+    else if (info) sec.append(h("div", { class: "item" }, [h("div", { class: "t" }, [h("b", { text: info.nome }),
+      h("div", { class: "muted small", text: [info.pagine ? info.pagine + " pagine" : "", mio ? (mio.blob.size / 1048576).toFixed(1).replace(".", ",") + " MB" : "", v.pdf && v.pdf.creato ? "preparato il " + dataOra(v.pdf.creato) : ""].filter(Boolean).join(" · ") }),
+      info.avviso ? h("span", { class: "chip red", text: info.avviso }) : null])]));
+    if (info || S.pdfBusy || v.stato === "firmato") {
+      sec.append(h("button", { type: "button", class: "primary full", text: "Invia per mail a me stesso", onclick: inviaPdf }));
+      sec.append(h("div", { class: "muted small", text: S.pdfBusy ? "Puoi toccarlo subito: parte appena il PDF è pronto." : "Conferma «Salva», poi nel pannello del telefono scegli Mail." }));
+    }
+    if (v.stato === "firmato" && !S.pdfBusy) sec.append(h("button", { type: "button", class: "full", text: info ? "Rifai il PDF" : "Prepara il PDF", onclick: function () { preparaPdf().then(null, function () {}); } }));
+    return sec;
+  }
+  function riapri() {
+    if (!S.armato.riapri) { S.armato.riapri = true; renderEdit(); setTimeout(function () { S.armato.riapri = false; }, 4000); return; }
+    S.armato = {};
+    var keys = Object.keys(S.firme);
+    keys.reduce(function (p, k) { return p.then(function () { return S.db.doc("firme/" + S.vid + "__" + k).delete(); }); }, Promise.resolve()).then(function () {
+      S.v.stato = "bozza"; touch(); flush(); S.step = 0; renderEdit(); toast("Verbale riaperto: le firme sono state tolte.");
+    }, function () { toast("Non è stato possibile togliere le firme: riprova."); });
+  }
+  function eliminaBozza() {
+    if (!S.armato.elimina) { S.armato.elimina = true; renderEdit(); setTimeout(function () { S.armato.elimina = false; }, 4000); return; }
+    var id = S.vid, foto = (S.v.foto || []).map(function (f) { return f.id; }).concat((S.v.mezzi || []).map(function (m) { return m.foto; }).filter(Boolean));
+    S.armato = {}; S.dirty = false; clearTimeout(S.saveT);
+    S.db.doc("verbali/" + id).delete().then(function () {
+      lsDel("verbale:" + id);
+      foto.forEach(cancellaAsset);
+      delete S.verbali[id]; chiudi(); toast("Bozza eliminata.");
+    }, function () { toast("La bozza non si è potuta eliminare."); });
+  }
+
+  // ------------------------------------------------------------------ anteprima (stesso testo del Word di genera_verbale.py)
+  // didascalia della foto di un mezzo, uguale in anteprima, PDF e Word: «Mezzo 1 – impresa – parola facoltativa»
+  function didMezzo(m, n) { var t = (m.nome || "").trim(); return "Mezzo " + n + " – " + (m.impresa || "") + (t ? " – " + t : ""); }
+  function anteprima() {
+    var v = S.v, c = cantiere(), carta = h("div", { class: "carta" });
+    var dc = function (t) { return h("span", { class: "dc", text: "[DA COMPLETARE: " + t + "]" }); };
+    var P = function (kids, cls) { return h("p", { class: cls || "" }, kids.map(function (k) { return typeof k === "string" ? document.createTextNode(k) : k; })); };
+    var riq = function (righe, cls) { return h("div", { class: "riq " + (cls || "") }, righe.map(function (r) { return P([r]); })); };
+    var sez = function (t) { carta.append(h("div", { class: "sez", text: t })); };
+    var tab = function (intest, righe, larg) {
+      var cg = h("colgroup", null, (larg || []).map(function (w) { return h("col", { style: "width:" + w + "%" }); }));
+      return h("table", null, [cg, h("thead", null, [h("tr", null, intest.map(function (x) { return h("th", { text: x }); }))]),
+        h("tbody", null, righe.map(function (r) { return h("tr", null, r.map(function (x) { return h("td", null, [x]); })); }))]);
+    };
+    var ENTE = "Committente / DL", presenti = v.presenti || [], imprese = c.imprese || [];
+    var affid = imprese.filter(function (i) { return i.tipo === "affidataria"; }).map(function (i) { return i.nome; });
+    var impPres = presenti.map(function (p) { return p.impresa; });
+    var sub = imprese.filter(function (i) { return i.tipo !== "affidataria" && impPres.indexOf(i.nome) >= 0; }).map(function (i) { return i.nome; });
+    carta.append(intestAnteprima(),
+      h("div", { class: "mod", text: "Mod. 9 – Verbale di visita in cantiere" }),
+      h("div", { class: "tit", text: "VERBALE DI VISITA IN CANTIERE N. " + p2(v.numero) }), h("div", { class: "sub", text: "(art. 92 D.Lgs. 81/2008)" }));
+    var dati = [["Lavori", c.lavori || dc("lavori")], ["Committente", c.committente || dc("committente")], ["Indirizzo del cantiere", c.indirizzo || dc("indirizzo")],
+      ["Impresa affidataria", affid.join(", ") || dc("impresa affidataria")]];
+    if (sub.length) dati.push(["Subappaltatrici presenti", sub.join(", ")]);
+    carta.append(h("table", null, [h("tbody", null, dati.map(function (r) { return h("tr", null, [h("td", { class: "k", text: r[0] }), h("td", null, [r[1]])]); }))]));
+    carta.append(P([fraseVisita(v)], "gius"));
+    var rapp = presenti.filter(function (p) { return p.tipo === "rappresentante" || p.tipo === "altro" || p.impresa === ENTE; });
+    var oper = presenti.filter(function (p) { return rapp.indexOf(p) < 0; });
+    sez("Sono presenti:");
+    carta.append(rapp.length ? tab(["Impresa / Ente", "Nominativo", "Ruolo"], rapp.map(function (p) { return [p.impresa === ENTE ? "Committente / Direzione lavori" : p.impresa, p.nome, p.ruolo || ""]; }), [30, 30, 40]) : riq(["—"]));
+    sez("Operai presenti in cantiere:");
+    carta.append(oper.length ? tab(["Impresa", "Nominativo", "Mansione"], oper.map(function (p) { return [p.impresa, p.nome, p.ruolo || ""]; }), [30, 30, 40]) : riq(["Nessuno."]));
+    sez("Mezzi e attrezzature presenti:");
+    var mf = (v.mezzi || []).filter(function (m) { return m.foto; }), mt = (v.mezzi || []).filter(function (m) { return !m.foto; });
+    if (mf.length) carta.append(h("div", { class: "fotogr" }, mf.map(function (m, i) {
+      return h("figure", null, [h("img", { src: srcFoto(m.foto), alt: "Mezzo " + (i + 1) }), h("figcaption", { text: didMezzo(m, i + 1) })]);
+    })));
+    if (mt.length) carta.append(tab(["Impresa", "Mezzo o attrezzatura"], mt.map(function (m) { return [m.impresa, m.nome]; }), [30, 70]));
+    if (!mf.length && !mt.length) carta.append(riq(["Nessun mezzo indicato."]));
+    sez("Lavorazioni in corso:");
+    carta.append(riq([(v.lavorazioni || "").trim() || dc("lavorazioni in corso")]));
+    var ep = v.esitoPrecedenti || [];
+    if (ep.length) {
+      sez("Esito delle prescrizioni ancora aperte dai verbali precedenti:");
+      carta.append(tab(["Verbale", "Prescrizione", "Esito"], ep.map(function (e) { return ["n. " + e.rif, e.testo, e.esito === "risolta" ? "Risolta" : e.esito === "aperta" ? "Ancora aperta" : dc("esito")]; }), [14, 60, 26]));
+    }
+    // le due caselle seguono solo le spunte del CSE (17/11/2026): senza spunta niente inosservanze, restano le disposizioni
+    var nessuna = !!v.nessunaInosservanza, spunta = conIno(v);
+    var ino = spunta ? (v.inosservanze || []).map(function (x) { return (x || "").trim(); }).filter(Boolean) : [];
+    var dis = (v.disposizioni || []).map(function (x) { return (x || "").trim(); }).filter(Boolean);
+    sez("Durante il sopralluogo si è potuto accertare che:");
+    carta.append(P([(nessuna ? "☒ " : "☐ ") + "Non sono state rilevate inosservanze, né esistono situazioni di pericolo grave e imminente;"], "cb"),
+      P([(spunta ? "☒ " : "☐ ") + "Sono state rilevate le seguenti inosservanze:"], "cb"));
+    carta.append(nessuna ? riq(["—"]) : spunta ? (ino.length ? riq(ino.map(function (x, i) { return "abcdefghijklmnopqrstuvwxyz"[i % 26] + ") " + x.replace(/[;.]+$/, "") + (i < ino.length - 1 ? ";" : "."); })) : riq([dc("inosservanze rilevate")]))
+      : riq([dc("inosservanze rilevate, oppure «nessuna inosservanza»")]));
+    var ril = conRilievi(v);
+    sez(ril ? TIT_RILIEVI : TIT_DISPONE);
+    carta.append(dis.length && (!nessuna || ril) ? riq(dis.map(function (x, i) { return (i + 1) + ". " + x; })) : ino.length ? riq([dc("disposizioni")]) : riq(["—"]));
+    var per = v.pericolo || {};
+    carta.append(P([(per.presente ? "☒ " : "☐ ") + "Esistono situazioni di pericolo grave ed imminente (art. 92, comma 1, lettera f): si ritiene necessario sospendere i lavori fino alla verifica degli avvenuti adeguamenti, in quanto:"], "cb"));
+    carta.append(riq([per.presente ? ((per.motivo || "").trim() || dc("motivo della sospensione")) : "—"]));
+    sez("Programma dei lavori per i giorni seguenti:"); carta.append(riq([(v.programma || "").trim() || "—"]));
+    sez("Eventuali prescrizioni per le lavorazioni sopraelencate:"); carta.append(riq([(v.prescrizioniLavorazioni || "").trim() || "Nessuna ulteriore prescrizione."]));
+    sez("Note:"); carta.append(riq([(v.note || "").trim() || "—"]));
+    if ((v.foto || []).length) {
+      sez("Documentazione fotografica:");
+      carta.append(h("div", { class: "fotogr" }, v.foto.map(function (f, i) {
+        return h("figure", null, [h("img", { src: srcFoto(f.id), alt: "Foto " + (i + 1) }), h("figcaption", { text: "Foto " + (i + 1) + ((f.didascalia || "").trim() ? " – " + f.didascalia.trim() : "") })]);
+      })));
+    }
+    carta.append(P(["Le osservazioni e le prescrizioni riportate nel presente verbale non possono essere considerate dall'impresa esecutrice (e dalle altre ditte presenti) come esaustive di tutti gli obblighi posti a loro carico dalle norme vigenti per la tutela e la salvaguardia dei lavoratori e dei luoghi di lavoro. Pertanto, il mantenimento nella norma del cantiere ai fini dell'igiene e della sicurezza dovrà essere un impegno costante e giornaliero, secondo quanto disposto in particolare dal D.Lgs. 81/2008. Si prescrive all'impresa esecutrice, e per essa al suo responsabile di cantiere, di provvedere con la massima urgenza ad adottare i provvedimenti necessari a rimuovere le anomalie riscontrate nel corso della visita e segnalate nel presente verbale. Il Coordinatore per l'esecuzione verificherà, con visite successive, il livello di sicurezza presente in cantiere."], "gius small"));
+    carta.append(riq([avvertenza()], "small"));
+    carta.append(P(["La visita si conclude alle ore ", v.oraFine ? v.oraFine + "." : h("span", { class: "auto", text: "(ora dell'ultima firma)." })]));
+    var fir = v.firmatari || [];
+    for (var i = 0; i < fir.length; i += 2) {
+      var cop = fir.slice(i, i + 2);
+      while (cop.length < 2) cop.push(null);
+      carta.append(h("table", null, [h("tbody", null, [
+        h("tr", null, cop.map(function (f) { return f ? h("th", null, [f.ruolo, h("br"), f.nome]) : h("th", { style: "background:transparent;border:0" }); })),
+        h("tr", null, cop.map(function (f) {
+          if (!f) return h("td", { style: "border:0" });
+          var fr = S.firme[f.chiave];
+          return h("td", { class: "firma-cella" }, fr ? [h("img", { src: fr.png, alt: "Firma di " + f.nome }), h("span", { text: "Firmato il " + dataOra(fr.firmatoIl) })] : []);
+        }))])]));
+    }
+    return carta;
+  }
+  document.getElementById("btnPrev").addEventListener("click", function () {
+    if (!S.v) return;
+    var body = document.getElementById("prevBody");
+    body.replaceChildren(anteprima()); body.scrollTop = 0;
+    document.getElementById("prev").hidden = false; document.documentElement.style.overflow = "hidden";
+  });
+  document.getElementById("btnPrevChiudi").addEventListener("click", function () {
+    document.getElementById("prev").hidden = true; document.documentElement.style.overflow = "";
+  });
+
+  // ------------------------------------------------------------------ PDF (stessa impaginazione e stesso testo del Word di genera_verbale.py)
+  var PDFLIB = "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js";
+  var risorsePdf = null;
+  function caricaScript(src) {
+    return new Promise(function (ok, ko) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { ko(new Error("libreria PDF non raggiungibile, serve la rete")); }; document.head.append(s); });
+  }
+  function base64Di(buf) { var b = new Uint8Array(buf), s = ""; for (var i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+  function binario(url) { return fetch(url).then(function (r) { if (!r.ok) throw new Error("file " + url + " non trovato"); return r.arrayBuffer(); }); }
+  function risorse() {
+    // caratteri una volta sola; intestazione e piè di pagina ogni volta dalle impostazioni (immagini caricate dall'utente)
+    if (!risorsePdf) {
+      risorsePdf = (window.pdfMake ? Promise.resolve() : caricaScript(PDFLIB)).then(function () {
+        return Promise.all(["font/LiberationSans-Regular.ttf", "font/LiberationSans-Bold.ttf"].map(function (u) { return binario(u).then(null, function () { return binario(u); }); }));
+      }).then(function (r) {
+        window.pdfMake.vfs = { "R.ttf": base64Di(r[0]), "B.ttf": base64Di(r[1]) };
+        window.pdfMake.fonts = { Arial: { normal: "R.ttf", bold: "B.ttf", italics: "R.ttf", bolditalics: "B.ttf" } };
+      });
+      risorsePdf.catch(function () { risorsePdf = null; });
+    }
+    var p = prof();
+    var immagine = function (id) {
+      if (!id) return Promise.resolve(null);
+      return fetch("_blob/" + id).then(function (r) { if (!r.ok) throw new Error("intestazione"); return r.blob(); }).then(leggiDataUrl).then(null, function () { return null; });
+    };
+    return risorsePdf.then(function () { return Promise.all([immagine(p.testata), immagine(p.piede)]); })
+      .then(function (x) { return { testata: x[0], piede: x[1] }; });
+  }
+  function leggiDataUrl(b) { return new Promise(function (ok, ko) { var fr = new FileReader(); fr.onload = function () { ok(String(fr.result)); }; fr.onerror = function () { ko(new Error("foto")); }; fr.readAsDataURL(b); }); }
+  function entro(p, ms) { return new Promise(function (ok, ko) { var t = setTimeout(function () { ko(new Error("tempo")); }, ms); p.then(function (x) { clearTimeout(t); ok(x); }, function (e) { clearTimeout(t); ko(e); }); }); }
+  function riduci(b) {
+    return new Promise(function (ok, ko) {
+      var u = URL.createObjectURL(b), im = new Image();
+      im.onload = function () {
+        var k = Math.min(1, 1000 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas");
+        c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+        c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+        c.toBlob(function (r) { c.width = 1; c.height = 1; if (r && r.size > 1000) ok(r); else ko(new Error("foto")); }, "image/jpeg", 0.72);
+      };
+      im.onerror = function () { URL.revokeObjectURL(u); ko(new Error("foto")); };
+      im.src = u;
+    });
+  }
+  // foto rimpicciolita per il PDF; se il telefono non ci riesce entro 15 s entra l'originale (già ridotto al caricamento)
+  function fotoPerPdf(id) {
+    // foto caricata da questo telefono: è già piccola, entra così com'è senza scaricarla di nuovo
+    if (fotoLocali[id]) return leggiDataUrl(fotoLocali[id].blob).then(function (src) { return { src: src }; });
+    var scarica = function () { return fetch("_blob/" + id).then(function (r) { if (!r.ok) throw new Error("foto"); return r.blob(); }); };
+    return scarica().then(null, scarica).then(function (b) {
+      return entro(riduci(b), 15000).then(function (r) { return r.size < b.size ? r : b; }, function () { return b; });
+    }).then(leggiDataUrl).then(function (src) { return { src: src }; });
+  }
+  function nomePdf() {
+    var v = S.v, c = cantiere(), d = (v.data || oggi()).split("/");
+    var t = c.nomeFile || "Verbale {nn} {cantiere} {gg}_{mm}_{aaaa}";
+    return t.replace("{nn}", p2(v.numero)).replace("{n}", String(Number(v.numero))).replace("{gg}", d[0] || "").replace("{mm}", d[1] || "")
+      .replace("{aaaa}", d[2] || "").replace("{cantiere}", c.nome || v.cantiere).replace(/[\\\/:*?"<>|]+/g, "-") + ".pdf";
+  }
+  function docVerbale(img, foto, info) {
+    var v = S.v, c = cantiere(), CM = 28.3465, GR = "#E7E6E6", ENTE = "Committente / DL";
+    var DA = function (t) { return { text: "[DA COMPLETARE: " + t + "]", background: "#FFF2A8" }; };
+    var lay = { hLineWidth: function () { return 0.5; }, vLineWidth: function () { return 0.5; },
+      paddingLeft: function () { return 5.4; }, paddingRight: function () { return 5.4; }, paddingTop: function () { return 2; }, paddingBottom: function () { return 2; } };
+    var titolo = function (t) { return { text: t, bold: true, margin: [0, 9, 0, 3], headlineLevel: 1 }; };
+    var riquadro = function (righe, size) {
+      return { table: { widths: ["*"], dontBreakRows: true, body: [[{ fontSize: size || 10, stack: righe.map(function (r, i) { return { text: r, margin: [0, i ? 4 : 0, 0, 0] }; }) }]] }, layout: lay, unbreakable: true };
+    };
+    var tabella = function (intest, righe, w) {
+      return { table: { headerRows: 1, dontBreakRows: true, widths: w,
+        body: [intest.map(function (x) { return { text: x, bold: true, fontSize: 9, alignment: "center", fillColor: GR }; })]
+          .concat(righe.map(function (r) { return r.map(function (x) { return typeof x === "object" ? Object.assign({ fontSize: 9 }, x) : { text: x, fontSize: 9 }; }); })) }, layout: lay };
+    };
+    var casella = function (sp, t, prima) {
+      var box = [{ type: "rect", x: 0, y: 1.5, w: 8, h: 8, lineWidth: 0.6 }];
+      if (sp) box.push({ type: "line", x1: 1.6, y1: 3.1, x2: 6.4, y2: 7.9, lineWidth: 0.9 }, { type: "line", x1: 6.4, y1: 3.1, x2: 1.6, y2: 7.9, lineWidth: 0.9 });
+      return { columns: [{ width: 17, canvas: box }, { width: "*", text: t }], margin: [0, prima, 0, 2], headlineLevel: 1 };
+    };
+    var testo = function (x) { return (x || "").trim(); };
+    // titolo e contenuto restano sulla stessa pagina (tabelle lunghe: solo il titolo segue la regola headlineLevel)
+    var insieme = function (nodi) { return { stack: nodi, unbreakable: true }; };
+    var sezione = function (t, corpo) { return corpo.unbreakable || !corpo.table || corpo.table.body.length <= 12 ? insieme([titolo(t), corpo]) : { stack: [titolo(t), corpo] }; };
+    // riga di due foto {src, did}, larghe 6,7 cm come nel Word
+    var rigaFoto = function (a, b) {
+      return { table: { widths: ["*", "*"], body: [[a, b].map(function (x) {
+        if (!x) return { text: "" };
+        return { stack: [{ image: x.src, fit: [6.7 * CM, 5.0 * CM], alignment: "center", margin: [0, 4, 0, 2] }, { text: x.did, fontSize: 9, alignment: "center" }] };
+      })] }, layout: "noBorders", unbreakable: true };
+    };
+    var presenti = v.presenti || [], imprese = c.imprese || [];
+    var affid = imprese.filter(function (i) { return i.tipo === "affidataria"; }).map(function (i) { return i.nome; });
+    var impPres = presenti.map(function (p) { return p.impresa; });
+    var sub = imprese.filter(function (i) { return i.tipo !== "affidataria" && impPres.indexOf(i.nome) >= 0; }).map(function (i) { return i.nome; });
+    var B = [];
+    B.push({ text: "Mod. 9 – Verbale di visita in cantiere", fontSize: 8, color: "#595959", margin: [0, 0, 0, 6] },
+      { text: "VERBALE DI VISITA IN CANTIERE N. " + p2(v.numero), bold: true, fontSize: 13, alignment: "center" },
+      { text: "(art. 92 D.Lgs. 81/2008)", fontSize: 9, alignment: "center", margin: [0, 0, 0, 8] });
+    var dati = [["Lavori", c.lavori || DA("lavori")], ["Committente", c.committente || DA("committente")], ["Indirizzo del cantiere", c.indirizzo || DA("indirizzo")],
+      ["Impresa affidataria", affid.join(", ") || DA("impresa affidataria")]];
+    if (sub.length) dati.push(["Subappaltatrici presenti", sub.join(", ")]);
+    B.push({ table: { widths: [4.6 * CM, "*"], dontBreakRows: true, body: dati.map(function (r) { return [{ text: r[0], bold: true, fillColor: GR }, typeof r[1] === "object" ? r[1] : { text: r[1] }]; }) }, layout: lay });
+    B.push({ text: fraseVisita(v), alignment: "justify", margin: [0, 10, 0, 4] });
+    var rapp = presenti.filter(function (p) { return p.tipo === "rappresentante" || p.tipo === "altro" || p.impresa === ENTE; });
+    var oper = presenti.filter(function (p) { return rapp.indexOf(p) < 0; });
+    var w3 = [4.6 * CM, 4.6 * CM, "*"];
+    B.push(sezione("Sono presenti:", rapp.length ? tabella(["Impresa / Ente", "Nominativo", "Ruolo"], rapp.map(function (p) { return [p.impresa === ENTE ? "Committente / Direzione lavori" : (p.impresa || ""), p.nome || "", p.ruolo || ""]; }), w3) : riquadro(["—"])));
+    B.push(sezione("Operai presenti in cantiere:", oper.length ? tabella(["Impresa", "Nominativo", "Mansione"], oper.map(function (p) { return [p.impresa || "", p.nome || "", p.ruolo || ""]; }), w3) : riquadro(["Nessuno."])));
+    // mezzi: prima le foto, due per riga, poi in tabella quelli senza foto (o con la foto che non si è caricata)
+    var mezzi = v.mezzi || [], mfOk = [], mt = [];
+    mezzi.forEach(function (m) { if (m.foto && foto[m.foto]) mfOk.push({ src: foto[m.foto].src, did: didMezzo(m, mfOk.length + 1) }); else mt.push(m); });
+    info.fotoMancanti = mezzi.filter(function (m) { return m.foto && !foto[m.foto]; }).length;
+    var tabMezzi = mt.length ? tabella(["Impresa", "Mezzo o attrezzatura"], mt.map(function (m) { return [m.impresa || "", m.nome || (m.foto ? "Mezzo fotografato (foto non disponibile)" : "")]; }), [4.6 * CM, "*"]) : null;
+    if (!mfOk.length) B.push(sezione("Mezzi e attrezzature presenti:", tabMezzi || riquadro(["Nessun mezzo indicato."])));
+    else {
+      for (var q = 0; q < mfOk.length; q += 2) { var rm = rigaFoto(mfOk[q], mfOk[q + 1]); B.push(q === 0 ? insieme([titolo("Mezzi e attrezzature presenti:"), rm]) : rm); }
+      if (tabMezzi) B.push(Object.assign(tabMezzi, { margin: [0, 6, 0, 0] }));
+    }
+    B.push(sezione("Lavorazioni in corso:", riquadro([testo(v.lavorazioni) || DA("lavorazioni in corso")])));
+    var ep = v.esitoPrecedenti || [];
+    if (ep.length) B.push(sezione("Esito delle prescrizioni ancora aperte dai verbali precedenti:",
+      tabella(["Verbale", "Prescrizione", "Esito"], ep.map(function (e) { return ["n. " + (e.rif || ""), e.testo || "", e.esito === "risolta" ? "Risolta" : e.esito === "aperta" ? "Ancora aperta" : DA("esito")]; }), [1.8 * CM, 10.4 * CM, "*"])));
+    // le due caselle seguono solo le spunte del CSE (17/11/2026): senza spunta niente inosservanze, restano le disposizioni
+    var nessuna = !!v.nessunaInosservanza, spunta = conIno(v);
+    var ino = spunta ? (v.inosservanze || []).map(testo).filter(Boolean) : [], dis = (v.disposizioni || []).map(testo).filter(Boolean);
+    B.push(insieme([titolo("Durante il sopralluogo si è potuto accertare che:"),
+      casella(nessuna, "Non sono state rilevate inosservanze, né esistono situazioni di pericolo grave e imminente;", 4),
+      casella(spunta, "Sono state rilevate le seguenti inosservanze:", 2),
+      nessuna ? riquadro(["—"]) : spunta ? (ino.length ? riquadro(ino.map(function (x, i) { return "abcdefghijklmnopqrstuvwxyz"[i % 26] + ") " + x.replace(/[;.]+$/, "") + (i < ino.length - 1 ? ";" : "."); })) : riquadro([DA("inosservanze rilevate")]))
+        : riquadro([DA("inosservanze rilevate, oppure «nessuna inosservanza»")])]));
+    var ril = conRilievi(v);
+    B.push(sezione(ril ? TIT_RILIEVI : TIT_DISPONE,
+      dis.length && (!nessuna || ril) ? riquadro(dis.map(function (x, i) { return (i + 1) + ". " + x; })) : ino.length ? riquadro([DA("disposizioni")]) : riquadro(["—"])));
+    var per = v.pericolo || {};
+    B.push(insieme([casella(!!per.presente, "Esistono situazioni di pericolo grave ed imminente (art. 92, comma 1, lettera f): si ritiene necessario sospendere i lavori fino alla verifica degli avvenuti adeguamenti, in quanto:", 8),
+      riquadro([per.presente ? (testo(per.motivo) || DA("motivo della sospensione")) : "—"])]));
+    B.push(sezione("Programma dei lavori per i giorni seguenti:", riquadro([testo(v.programma) || "—"])));
+    B.push(sezione("Eventuali prescrizioni per le lavorazioni sopraelencate:", riquadro([testo(v.prescrizioniLavorazioni) || "Nessuna ulteriore prescrizione."])));
+    B.push(sezione("Note:", riquadro([testo(v.note) || "—"])));
+    var ff = (v.foto || []).map(function (f, i) { var did = testo(f.didascalia); return { img: foto[f.id], did: "Foto " + (i + 1) + (did ? " – " + did : "") }; });
+    info.fotoMancanti += ff.filter(function (x) { return !x.img; }).length;
+    var ok = ff.filter(function (x) { return x.img; }).map(function (x) { return { src: x.img.src, did: x.did }; });
+    for (var i = 0; i < ok.length; i += 2) {
+      // una riga di due foto per volta; la prima riga resta con il titolo
+      var riga = rigaFoto(ok[i], ok[i + 1]);
+      B.push(i === 0 ? insieme([titolo("Documentazione fotografica:"), riga]) : riga);
+    }
+    B.push({ text: "Le osservazioni e le prescrizioni riportate nel presente verbale non possono essere considerate dall'impresa esecutrice (e dalle altre ditte presenti) come esaustive di tutti gli obblighi posti a loro carico dalle norme vigenti per la tutela e la salvaguardia dei lavoratori e dei luoghi di lavoro. Pertanto, il mantenimento nella norma del cantiere ai fini dell'igiene e della sicurezza dovrà essere un impegno costante e giornaliero, secondo quanto disposto in particolare dal D.Lgs. 81/2008. Si prescrive all'impresa esecutrice, e per essa al suo responsabile di cantiere, di provvedere con la massima urgenza ad adottare i provvedimenti necessari a rimuovere le anomalie riscontrate nel corso della visita e segnalate nel presente verbale. Il Coordinatore per l'esecuzione verificherà, con visite successive, il livello di sicurezza presente in cantiere.", fontSize: 9, alignment: "justify", margin: [0, 12, 0, 8] });
+    var avv = avvertenza().split(" Quanto concordato");
+    // avvertenza, ora di fine e prima riga di firme restano sulla stessa pagina: la pagina firmata non è mai di sole firme
+    var avvBox = riquadro([avv[0], "Quanto concordato" + (avv[1] || "")], 8.5);
+    var chiusa = { text: "La visita si conclude alle ore " + (v.oraFine || "") + ".", margin: [0, 8, 0, 8] };
+    var fir = v.firmatari || [];
+    info.mancano = [];
+    if (!fir.length) B.push(insieme([avvBox, chiusa]));
+    for (var k = 0; k < fir.length; k += 2) {
+      var cop = fir.slice(k, k + 2);
+      var testa = [0, 1].map(function (j) { var f = cop[j]; return f ? { text: f.ruolo + "\n" + f.nome, fontSize: 9, alignment: "center", fillColor: GR } : { text: "" }; });
+      var celle = [0, 1].map(function (j) {
+        var f = cop[j]; if (!f) return { text: "" };
+        var fr = S.firme[f.chiave];
+        if (!fr || !fr.png) { info.mancano.push(f.nome); return { text: "" }; }
+        return { stack: [{ image: fr.png, fit: [6.5 * CM, 2.1 * CM], alignment: "center", margin: [0, 4, 0, 2] }, { text: "Firmato il " + dataOra(fr.firmatoIl), fontSize: 7.5, color: "#595959", alignment: "center" }] };
+      });
+      var tf = { table: { widths: ["*", "*"], heights: function (r) { return r === 1 ? 3.0 * CM : "auto"; }, body: [testa, celle] }, layout: lay, unbreakable: true, margin: [0, 0, 0, 6] };
+      B.push(k === 0 ? insieme([avvBox, chiusa, tf]) : tf);
+    }
+    return {
+      pageSize: "A4", pageMargins: [1.9 * CM, 3.44 * CM, 1.9 * CM, 2.54 * CM],
+      info: { title: "Verbale di visita in cantiere n. " + p2(v.numero) + " – " + (c.nome || v.cantiere), author: nomeCse() },
+      defaultStyle: { font: "Arial", fontSize: 10, lineHeight: 1.05 },
+      // con le immagini delle impostazioni: carta intestata a tutta pagina; senza: nome in alto, recapiti e pagine in basso
+      header: function () {
+        return img.testata ? { image: img.testata, width: 595.28 } : { margin: [1.9 * CM, 1.3 * CM, 1.9 * CM, 0],
+          stack: [{ text: prof().intestazione || " ", fontSize: 9, color: "#595959" }, { text: nomeCse(), fontSize: 11, bold: true }] };
+      },
+      footer: function (n, tot) {
+        info.pagine = tot;
+        var p = prof();
+        return img.piede ? { image: img.piede, width: 595.28 } : { margin: [1.9 * CM, 0.9 * CM, 1.9 * CM, 0], columns: [
+          { text: [p.email, p.pec].filter(Boolean).join(" – ") || " ", fontSize: 8, color: "#595959" },
+          { text: "pag. " + n + " di " + tot, fontSize: 8, color: "#595959", alignment: "right", width: 70 }] };
+      },
+      pageBreakBefore: function (nodo, seguenti) { return nodo.headlineLevel === 1 && seguenti.length === 0; },
+      content: B
+    };
+  }
+  function scriviBusy(t) { S.pdfBusy = t; var el = document.getElementById("pdfBusy"); if (el) el.textContent = t; }
+  function preparaPdf() {
+    var vid = S.vid, v = S.v;
+    if (S.pdfPromise) return S.pdfPromise;
+    S.pdfBusy = "Preparo il PDF…"; if (S.view === "edit" && S.step === 4) renderEdit();
+    var fine = function (msg) { S.pdfBusy = false; S.pdfPromise = null; if (S.view === "edit" && S.vid === vid && S.step === 4) renderEdit(); if (msg) toast(msg); };
+    S.pdfPromise = risorse().then(function (img) {
+      // una foto alla volta (memoria del telefono), con un secondo tentativo: prima quelle dei mezzi, poi la documentazione
+      var lista = (v.mezzi || []).map(function (m) { return m.foto; }).filter(Boolean).concat((v.foto || []).map(function (f) { return f.id; })), foto = {};
+      return lista.reduce(function (p, id, i) {
+        return p.then(function () {
+          scriviBusy("Preparo il PDF: foto " + (i + 1) + " di " + lista.length + "…");
+          return fotoPerPdf(id).then(null, function () { return fotoPerPdf(id); }).then(function (x) { foto[id] = x; }, function () {});
+        });
+      }, Promise.resolve()).then(function () { return { img: img, foto: foto }; });
+    }).then(function (r) {
+      scriviBusy("Preparo il PDF: impaginazione…");
+      var info = { pagine: 0 }, dd = docVerbale(r.img, r.foto, info);
+      return new Promise(function (ok, ko) { try { window.pdfMake.createPdf(dd).getBlob(function (b) { ok({ blob: b, info: info }); }); } catch (e) { ko(e); } });
+    }).then(function (r) {
+      var nome = nomePdf(), avvisi = [];
+      if (r.info.fotoMancanti) avvisi.push(r.info.fotoMancanti === 1 ? "1 foto non è entrata" : r.info.fotoMancanti + " foto non sono entrate");
+      if (r.info.mancano.length) avvisi.push("mancano le firme di " + r.info.mancano.join(", "));
+      var avviso = avvisi.length ? "Attenzione: " + avvisi.join("; ") + ". Rifai il PDF con la rete buona." : "";
+      S.pdf = { vid: vid, blob: r.blob, nome: nome, pagine: r.info.pagine, avviso: avviso };
+      var msg = avviso ? "PDF pronto, ma " + avvisi.join("; ") + "." : "PDF pronto.";
+      if (!S.assets) return msg;
+      return S.assets.upload(new File([r.blob], nome, { type: "application/pdf" })).then(function (a) {
+        var vecchio = S.v && S.vid === vid && S.v.pdf ? S.v.pdf.id : null;
+        if (S.vid === vid && S.v) { S.v.pdf = { id: a.id, nome: nome, pagine: r.info.pagine, creato: new Date().toISOString(), avviso: avviso }; touch(); flush(); }
+        if (vecchio && vecchio !== a.id) S.assets.delete(vecchio).then(function () {}, function () {});
+        return msg;
+      }, function () { return msg + " Non è stato salvato online: mandalo per mail adesso."; });
+    }).then(function (msg) { fine(msg); return S.pdf; }, function (e) {
+      fine("Il PDF non si è potuto preparare: " + ((e && e.message) || "errore") + ".");
+      var err = new Error((e && e.message) || "errore"); err.giaDetto = true; throw err;
+    });
+    return S.pdfPromise;
+  }
+  function pdfDaArchivio() {
+    if (S.pdf && S.pdf.vid === S.vid) return Promise.resolve(S.pdf);
+    var p = S.v && S.v.pdf, vid = S.vid;
+    if (!p) return Promise.reject(new Error("Prepara prima il PDF."));
+    return fetch("_blob/" + p.id).then(function (r) { if (!r.ok) throw new Error("Il PDF salvato non si trova più: rifallo."); return r.blob(); })
+      .then(function (b) { S.pdf = { vid: vid, blob: b, nome: p.nome, pagine: p.pagine }; return S.pdf; });
+  }
+  function salvaPdf(p) {
+    if (!S.downloads) { toast("Da qui il file non si può passare al telefono."); return; }
+    S.downloads.save({ filename: p.nome, data: p.blob }).then(function () { toast("Scegli Mail e mandalo al tuo indirizzo."); }, function (e) {
+      var c = e && e.code;
+      if (c === "declined") return;
+      toast(c === "rate_limited" ? "C'è già una richiesta aperta: riprova tra poco." : "Il PDF non si è potuto passare al telefono (" + (c || "errore") + ").");
+    });
+  }
+  function inviaPdf() {
+    var c = cantiere(), v = S.v, pronto = S.pdf && S.pdf.vid === S.vid ? S.pdf : null;
+    var oggetto = (c.nome || v.cantiere) + " - verbale di visita in cantiere n. " + p2(v.numero) + " del " + (v.data || "");
+    var tocco = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    if (pronto && tocco && navigator.canShare) {
+      var file = new File([pronto.blob], pronto.nome, { type: "application/pdf" }), puo = false;
+      try { puo = navigator.canShare({ files: [file] }); } catch (e) { puo = false; }
+      if (puo) {
+        navigator.share({ files: [file], title: oggetto, text: oggetto }).then(function () {}, function (e) { if (e && e.name === "AbortError") return; salvaPdf(pronto); });
+        return;
+      }
+    }
+    // PDF non ancora in mano: si aspetta quello in preparazione, oppure si scarica quello salvato, oppure si fa adesso
+    var p = pronto ? Promise.resolve(pronto) : S.pdfPromise ? S.pdfPromise : v.pdf ? pdfDaArchivio() : preparaPdf();
+    if (!pronto) toast("Preparo il PDF, poi si apre l'invio…");
+    p.then(salvaPdf, function (e) { if (e && e.message && !e.giaDetto) toast(e.message); });
+  }
+
+  // ------------------------------------------------------------------ foglio di firma
+  var pad = document.getElementById("pad"), paper = document.getElementById("paper"), cv = document.getElementById("canvas");
+  var ctx = cv.getContext("2d"), strokes = [], cur = null, dpr = 1, LW = 2.8, padFirmatario = null;
+  var btnOk = document.getElementById("btnConferma"), padErr = document.getElementById("padErr"), hint = document.getElementById("padHint");
+  function dimensiona() { var r = paper.getBoundingClientRect(); dpr = window.devicePixelRatio || 1; cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.max(1, Math.round(r.height * dpr)); ridisegna(); }
+  function tratto(c, pts, sc, ox, oy) {
+    if (!pts.length) return;
+    c.beginPath(); c.moveTo((pts[0][0] - ox) * sc, (pts[0][1] - oy) * sc);
+    if (pts.length === 1) c.lineTo((pts[0][0] - ox) * sc + 0.1, (pts[0][1] - oy) * sc);
+    for (var i = 1; i < pts.length - 1; i++) { var mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2;
+      c.quadraticCurveTo((pts[i][0] - ox) * sc, (pts[i][1] - oy) * sc, (mx - ox) * sc, (my - oy) * sc); }
+    if (pts.length > 1) { var l = pts[pts.length - 1]; c.lineTo((l[0] - ox) * sc, (l[1] - oy) * sc); }
+    c.stroke();
+  }
+  function stile(c, w) { c.lineCap = "round"; c.lineJoin = "round"; c.lineWidth = w; c.strokeStyle = "#10151A"; }
+  function lunghezza() { var t = 0; strokes.forEach(function (s) { for (var i = 1; i < s.length; i++) t += Math.hypot(s[i][0] - s[i - 1][0], s[i][1] - s[i - 1][1]); }); return t; }
+  function ridisegna() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); stile(ctx, LW * dpr);
+    strokes.forEach(function (s) { tratto(ctx, s, dpr, 0, 0); }); if (cur) tratto(ctx, cur, dpr, 0, 0);
+    btnOk.disabled = lunghezza() < 40; hint.hidden = strokes.length > 0 || !!cur;
+  }
+  function punto(e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  cv.addEventListener("pointerdown", function (e) { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (x) {} cur = [punto(e)]; padErr.textContent = ""; ridisegna(); });
+  cv.addEventListener("pointermove", function (e) { if (!cur) return; e.preventDefault(); var evs = e.getCoalescedEvents ? e.getCoalescedEvents() : []; (evs.length ? evs : [e]).forEach(function (ev) { cur.push(punto(ev)); }); ridisegna(); });
+  function fine() { if (cur) { strokes.push(cur); cur = null; ridisegna(); } }
+  cv.addEventListener("pointerup", fine); cv.addEventListener("pointercancel", fine);
+  if (window.ResizeObserver) new ResizeObserver(function () { if (!pad.hidden) dimensiona(); }).observe(paper);
+  function esporta() {
+    var minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+    strokes.forEach(function (s) { s.forEach(function (p) { minx = Math.min(minx, p[0]); miny = Math.min(miny, p[1]); maxx = Math.max(maxx, p[0]); maxy = Math.max(maxy, p[1]); }); });
+    minx -= 8; miny -= 8; maxx += 8; maxy += 8;
+    var w = maxx - minx, hh = maxy - miny, sc = Math.min(2, 900 / Math.max(w, 1));
+    var o = document.createElement("canvas"); o.width = Math.ceil(w * sc); o.height = Math.ceil(hh * sc);
+    var c = o.getContext("2d"); stile(c, LW * sc); strokes.forEach(function (s) { tratto(c, s, sc, minx, miny); });
+    return { png: o.toDataURL("image/png"), larghezza: o.width, altezza: o.height };
+  }
+  function apriPad(f) {
+    padFirmatario = f; strokes = []; cur = null; padErr.textContent = "";
+    document.getElementById("padRuolo").textContent = f.ruolo; document.getElementById("padNome").textContent = f.nome;
+    pad.hidden = false; document.documentElement.style.overflow = "hidden"; requestAnimationFrame(dimensiona);
+  }
+  function chiudiPad() { pad.hidden = true; padFirmatario = null; document.documentElement.style.overflow = ""; }
+  document.getElementById("btnAnnulla").addEventListener("click", chiudiPad);
+  document.getElementById("btnCancella").addEventListener("click", function () { strokes = []; cur = null; padErr.textContent = ""; ridisegna(); });
+  btnOk.addEventListener("click", function () {
+    var f = padFirmatario; if (!f || !S.db || !S.vid) return;
+    var img = esporta(); btnOk.disabled = true; btnOk.textContent = "Salvataggio…";
+    S.db.doc("firme/" + S.vid + "__" + f.chiave).set({ verbale: S.vid, chiave: f.chiave, nome: f.nome, ruolo: f.ruolo,
+      png: img.png, larghezza: img.larghezza, altezza: img.altezza, firmatoIl: new Date().toISOString() }).then(function () {
+      btnOk.textContent = "Conferma firma"; chiudiPad();
+    }, function (e) {
+      btnOk.textContent = "Conferma firma"; btnOk.disabled = false;
+      padErr.textContent = e && e.code === "quota_exceeded" ? "Spazio delle firme esaurito: avvisa Claude." : e && e.code === "invalid_argument" ? "La firma non si è potuta salvare: cancella e firma di nuovo." : "Firma non salvata: controlla la connessione e riprova.";
+    });
+  });
+
+  avvia();
+})();
+</script>
+</body>
+</html>
